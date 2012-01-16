@@ -1,0 +1,14 @@
+ABOUT
+=====
+
+Gecko has built-in cross platform profiling support.
+This extension is designed to prevent a front end
+to this profiling support.
+
+For more details see:
+https://developer.mozilla.org/en/Performance/Profiling_with_the_Built-in_Profiler
+
+PLATFORM
+========
+
+For the platform support see 'tools/profiler' in gecko.
