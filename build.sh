@@ -9,4 +9,4 @@ fi
 cd sdk
 . ./bin/activate
 cd ..
-cfx xpi --update-url https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler.xpi
+cfx xpi --update-link https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler.xpi --update-url https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler.update.rdf
