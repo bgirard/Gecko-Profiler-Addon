@@ -3,10 +3,12 @@
     "license": "MPL2", 
     "author": "Benoit Girard <bgirard@mozilla.com>", 
     "url": "https://github.com/bgirard/Gecko-Profiler-Addon", 
-    "version": "1.1.6", 
+    "version": "1.1.7", 
     "dependencies": [
       "addon-kit",
-      "api-utils"
+      "api-utils",
+      "vold-utils",
+      "xulkeys"
     ], 
     "preferences": [{
         "name": "somePreference",
