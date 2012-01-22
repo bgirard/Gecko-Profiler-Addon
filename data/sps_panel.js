@@ -48,6 +48,7 @@ self.port.on("onShow", function(val) {
 self.port.on("onHide", function(val) {
     if (gUpdateInterval)
         clearInterval(gUpdateInterval);
+    gUpdateInterval = null;
 });
 
 self.port.on("change_status", function(val) {
@@ -127,3 +128,4 @@ function drawGraph(ctx, data, x, y, w, h) {
   ctx.fill();
   ctx.stroke();
 }
+
