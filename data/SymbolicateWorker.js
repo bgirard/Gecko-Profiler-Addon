@@ -38,12 +38,12 @@ self.onmessage = function (msg) {
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
     symbolicate(profile, sPlatform, function (progress, action) {
-      self.postMessage({ id: id, progress: progress, action: action });
+      self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
-      self.postMessage({ id: id, profile: result });
+      self.postMessage({ id: id, type: "finished", profile: result });
     });    
   } else {
-    self.postMessage({ id: id, profile: result });
+    self.postMessage({ id: id, type: "finished", profile: result });
   }
 }
 

@@ -21,11 +21,14 @@ function symbolicate(profile, progressCallback, finishCallback) {
   var id = sProfileID++;
   worker.addEventListener("message", function workerSentMessage(msg) {
     if (msg.data.id == id) {
-      if ("progress" in msg.data) {
-        progressCallback(Math.floor(msg.data.progress * 100) + "% " + msg.data.action);
-      } else {
-        worker.removeEventListener("message", workerSentMessage);
-        finishCallback(msg.data.profile);
+      switch (msg.data.type) {
+        case "progress":
+          progressCallback(Math.floor(msg.data.progress * 100) + "% " + msg.data.action);
+          break;
+        case "finished":
+          worker.removeEventListener("message", workerSentMessage);
+          finishCallback(msg.data.profile);
+          break;
       }
     }
   });
