@@ -1,6 +1,11 @@
 <html>
   <head>
   <style type="text/css">
+  :root[status=running] .onlyWhileStopped,
+  :root[status=stopped] .onlyWhileRunning {
+    display: none;
+  }
+  
   html, body {
     padding: 0;
     margin: 0;
@@ -11,16 +16,19 @@
     color: white;
     text-shadow: 0 1px rgba(0, 0, 0, 0.4);
   }
-  canvas {
-  }
   </style>
   </head>
   <body>
-    Profiler: <button id="btnToggleActive" type="button">...</button>
-    <span class="ctrl">Ctrl</span>+Shift+S<br>
-    Profile: <button id="btnSave" type="button">Analyze</button>
-    <span class="ctrl">Ctrl</span>+Shift+O<br>
-    Bugzilla: <button id="btnFileBug" type="button">File Bug</button>
-    <canvas width="120" height="60"></canvas>
+    <div class="onlyWhileStopped">
+      <button id="btnStart" type="button">Start Profiling</button>
+      <span class="ctrl">Ctrl</span>+Shift+S<br>
+    </div>
+    <div class="onlyWhileRunning">
+      Current Profile:<br>
+      <button id="btnSave" type="button">Collect &amp; Inspect</button>
+      <span class="ctrl">Ctrl</span>+Shift+O<br>
+      <button id="btnStop" type="button">Cancel</button>
+      <span class="ctrl">Ctrl</span>+Shift+S<br>
+    </div>
   </body>
 </html>

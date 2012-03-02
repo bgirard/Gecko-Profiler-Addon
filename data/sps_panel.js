@@ -46,98 +46,18 @@ self.port.on("platform", function (platform) {
   }
 });
 
-function sps_toggle_active() {
-    self.port.emit("toggle", "test");   
-}
-function sps_get_responsive() {
-    self.port.emit("responsive", "test");  
-}
-var gUpdateInterval = null;
-
-self.port.on("onShow", function(val) {
-    if (!gUpdateInterval)
-        gUpdateInterval = setInterval(sps_get_responsive,50);
-});
-self.port.on("onHide", function(val) {
-    if (gUpdateInterval)
-        clearInterval(gUpdateInterval);
-    gUpdateInterval = null;
+self.port.on("changeStatus", function(val) {
+    document.documentElement.setAttribute("status", val);
 });
 
-self.port.on("change_status", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = val;
-});
-document.getElementById("btnToggleActive").onclick = sps_toggle_active;
+document.getElementById("btnStart").onclick = function () {
+    self.port.emit("startProfiler");   
+};
 
+document.getElementById("btnStop").onclick = function () {
+    self.port.emit("stopProfiler");   
+};
 
-function bugzilla_file_bug() {
-    self.port.emit("filebug", "test");
-}
-document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
-
-
-function sps_save() {
+document.getElementById("btnSave").onclick = function () {
     self.port.emit("getprofile", "test");   
-}
-document.getElementById("btnSave").onclick = sps_save;
-
-self.port.on("getprofile", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;
-});
-
-self.port.on("responsive", function(val) {
-  let canvas = document.getElementsByTagName("canvas")[0];
-  var ctx = canvas.getContext("2d");
-  ctx.lineWidth = 1;
-  reset(ctx, canvas);
-  drawGraph(ctx, val, 5, 5, 100, 50);
-  drawAxis(ctx, 5, 5, 100, 50);
-});
-
-// Plot sizes
-var margin = 5;
-var height = 50;
-var width = 200;
-
-function onClick() {
-  // close the plot panel and open a new tab
-  postMessage("close");
-}
-
-function reset(ctx, canvas) {
-  // reset the canvas
-     ctx.clearRect(0,0,canvas.width,canvas.height);
-     ctx.beginPath();
-}
-
-function drawAxis(ctx, x, y, w, h) {
-  ctx.strokeStyle = "black";
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, y+h);
-  ctx.lineTo(x+w, y+h);
-  ctx.stroke();
-}
-
-function drawGraph(ctx, data, x, y, w, h) {
-  ctx.strokeStyle = "green";
-  ctx.fillStyle = "#888";
-  ctx.beginPath();
-  ctx.moveTo(x, y+h);
-  
-  var max = 100;
-  
-  for(var i = 0; i < data.length; i++) {
-      if (data[i] > 100) data[i] = 100;
-  }
-  
-  for(var i = 0; i < data.length; i++) {
-      ctx.lineTo(x+i, y+h-data[i]/max*h);
-  }
-  
-  ctx.lineTo(x+data.length, y+h);
-  ctx.lineTo(x, y+h);
-  ctx.fill();
-  ctx.stroke();
-}
-
+};
