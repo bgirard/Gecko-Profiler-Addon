@@ -2,7 +2,7 @@ ABOUT
 =====
 
 Gecko has built-in cross platform profiling support.
-This extension is designed to prevent a front end
+This extension is designed to provide a front end
 to this profiling support.
 
 For more details see:
@@ -18,11 +18,12 @@ INSTALLING
 
 In order to install this add-on, you need a copy of the add-on SDK.  Please do the following:
 
-1. `git clone https://github.com/mozilla/addon-sdk`
+1. `git clone https://github.com/mozilla/addon-sdk && cd addon-sdk`
 2. `git checkout 1.4`
-    Add the following to 'sdk/packages':
-      - https://github.com/erikvold/xulkeys-jplib
-      - https://github.com/erikvold/vold-utils-jplib
-3. `. bin/activate`
-4. `cd /path/to/Gecko-Profiler-Addon`
-5. `cfx xpi`
+3. `cd packages`
+   `git clone https://github.com/erikvold/vold-utils-jplib`
+   `git clone https://github.com/erikvold/xulkeys-jplib`
+   `cd ..`
+4. `. bin/activate`
+5. `cd /path/to/Gecko-Profiler-Addon`
+6. `cfx xpi`
