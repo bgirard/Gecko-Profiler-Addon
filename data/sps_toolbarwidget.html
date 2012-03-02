@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<title>Profiler status bar widget</title>
+<style>
+.platform_mac #status {
+  font: message-box;
+  text-shadow: 0 1px rgba(255, 255, 255, 0.4);
+  -moz-user-select: none;
+  cursor: pointer;
+  padding-top: 1px;
+}
+.platform_mac #status:active:hover {
+  text-shadow: none;
+}
+</style>
+
+<div id="status"></div>

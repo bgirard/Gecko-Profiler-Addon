@@ -5,13 +5,21 @@
     padding: 0;
     margin: 0;
   }
+  .platform_mac body {
+    padding: 5px;
+    font: message-box;
+    color: white;
+    text-shadow: 0 1px rgba(0, 0, 0, 0.4);
+  }
   canvas {
   }
   </style>
   </head>
   <body>
-    Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
-    Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
+    Profiler: <button id="btnToggleActive" type="button">...</button>
+    <span class="ctrl">Ctrl</span>+Shift+S<br>
+    Profile: <button id="btnSave" type="button">Analyze</button>
+    <span class="ctrl">Ctrl</span>+Shift+O<br>
     Bugzilla: <button id="btnFileBug" type="button">File Bug</button>
     <canvas width="120" height="60"></canvas>
   </body>

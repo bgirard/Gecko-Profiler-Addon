@@ -33,6 +33,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
+ // Enable platform-specific styles.
+self.port.on("platform", function (platform) {
+  document.documentElement.classList.add("platform_" + platform);
+
+  if (platform == "mac") {
+    // Replace "Ctrl" with "Cmd" in the labels.
+    var ctrlElements = document.getElementsByClassName("ctrl");
+    for (var i = 0; i < ctrlElements.length; i++) {
+      ctrlElements[i].textContent = "Cmd";
+    }
+  }
+});
+
 function sps_toggle_active() {
     self.port.emit("toggle", "test");   
 }
@@ -73,8 +86,7 @@ self.port.on("getprofile", function(val) {
 });
 
 self.port.on("responsive", function(val) {
-dump("draw\n");
-    let canvas = document.getElementsByTagName("canvas")[0];
+  let canvas = document.getElementsByTagName("canvas")[0];
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 1;
   reset(ctx, canvas);
