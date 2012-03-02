@@ -88,14 +88,14 @@ function runAsContinuation(fun) {
     resumeContinuation();
 }
 
-const kSymbolsPerMS = 0.99;
+const kExpectedSymbolsProcessedPerMs = 0.99;
 const kSymbolicationWarmupTime = 15; // ms
 
 function resolveSymbols(reporter, symbolsToResolve, platform, callback) {
     reporter.begin("Resolving symbols...");
     var libReporters = {};
     for (var lib in symbolsToResolve) {
-        var expectedDuration = kSymbolicationWarmupTime + Object.keys(symbolsToResolve[lib]).length / kSymbolsPerMS;
+        var expectedDuration = kSymbolicationWarmupTime + Object.keys(symbolsToResolve[lib]).length / kExpectedSymbolsProcessedPerMs;
         libReporters[lib] = reporter.addSubreporter(expectedDuration);
     }
     runAsContinuation(function (resumeContinuation) {
