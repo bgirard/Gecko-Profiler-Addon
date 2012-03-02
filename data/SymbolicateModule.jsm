@@ -21,8 +21,12 @@ function symbolicate(profile, progressCallback, finishCallback) {
   var id = sProfileID++;
   worker.addEventListener("message", function workerSentMessage(msg) {
     if (msg.data.id == id) {
-      worker.removeEventListener("message", workerSentMessage);
-      finishCallback(msg.data.profile);
+      if ("progress" in msg.data) {
+        progressCallback(Math.floor(msg.data.progress * 100) + "% " + msg.data.action);
+      } else {
+        worker.removeEventListener("message", workerSentMessage);
+        finishCallback(msg.data.profile);
+      }
     }
   });
   worker.postMessage({ id: id, profile: profile });

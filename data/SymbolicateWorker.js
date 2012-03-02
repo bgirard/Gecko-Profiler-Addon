@@ -1,3 +1,5 @@
+importScripts("ProgressReporter.js");
+
 var dropFrames =
   [ "TableTicker::Tick",
     "ProfilerSignalHandler",
@@ -35,7 +37,9 @@ self.onmessage = function (msg) {
   var { id, profile } = msg.data;
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
-    symbolicate(profile, sPlatform, function (result) {
+    symbolicate(profile, sPlatform, function (progress, action) {
+      self.postMessage({ id: id, progress: progress, action: action });
+    }, function (result) {
       self.postMessage({ id: id, profile: result });
     });    
   } else {
@@ -55,7 +59,8 @@ function runCommand(cmd, callback) {
 }
 
 // Compute a map of libraries to resolve
-function findSymbolsToResolve(lines) {
+function findSymbolsToResolve(reporter, lines) {
+    reporter.begin("Gathering unresolved symbols...")
     var symbolsToResolve = {};
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
@@ -68,7 +73,9 @@ function findSymbolsToResolve(lines) {
             }
             symbolsToResolve[library][offset] = null;
         }
+        reporter.setProgress((i + 1) / lines.length);
     }
+    reporter.finish();
     return symbolsToResolve;
 }
 
@@ -81,12 +88,21 @@ function runAsContinuation(fun) {
     resumeContinuation();
 }
 
-function resolveSymbols(symbolsToResolve, platform, callback) {
+const kSymbolsPerMS = 0.99;
+const kSymbolicationWarmupTime = 15; // ms
+
+function resolveSymbols(reporter, symbolsToResolve, platform, callback) {
+    reporter.begin("Resolving symbols...");
+    var libReporters = {};
+    for (var lib in symbolsToResolve) {
+        var expectedDuration = kSymbolicationWarmupTime + Object.keys(symbolsToResolve[lib]).length / kSymbolsPerMS;
+        libReporters[lib] = reporter.addSubreporter(expectedDuration);
+    }
     runAsContinuation(function (resumeContinuation) {
         var resolvedSymbols = {};
         for (var lib in symbolsToResolve) {
             var unresolvedList = Object.keys(symbolsToResolve[lib]);
-            resolvedSymbols[lib] = yield read_symbols_lib(lib, unresolvedList, platform, resumeContinuation);
+            resolvedSymbols[lib] = yield read_symbols_lib(libReporters[lib], lib, unresolvedList, platform, resumeContinuation);
         }
         setTimeout(function () {
             callback(resolvedSymbols);
@@ -98,7 +114,8 @@ function shouldDropFrame(symbolName) {
     return dropFrames.indexOf(symbolName) != -1;
 }
 
-function substituteSymbols(lines, resolvedSymbols, callback) {
+function substituteSymbols(reporter, lines, resolvedSymbols, callback) {
+    reporter.begin("Substituting symbols in original profile...");
     var newProfile = [];
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
@@ -119,17 +136,46 @@ function substituteSymbols(lines, resolvedSymbols, callback) {
         } else {
             newProfile.push(line);
         }
+        reporter.setProgress((i + 1) / lines.length);
     }
+    reporter.finish();
     return newProfile;
 }
 
-function symbolicate(profile, platform, finishCallback) {
+function getSplitLines(reporter, profile) {
+    reporter.begin("Splitting profile into lines...");
+    var split = profile.split("\n");
+    reporter.finish();
+    return split;
+}
+
+function getJoinedLines(reporter, lines) {
+    reporter.begin("Joining lines into new profile...");
+    var joined = lines.join("\n");
+    reporter.finish();
+    return joined;
+}
+
+function symbolicate(profile, platform, progressCallback, finishCallback) {
     runAsContinuation(function (resumeContinuation) {
-        var lines = profile.split("\n");
-        var symbolsToResolve = findSymbolsToResolve(lines);
-        var resolvedSymbols = yield resolveSymbols(symbolsToResolve, platform, resumeContinuation);
-        var fixedLines = substituteSymbols(lines, resolvedSymbols);
-        finishCallback(fixedLines.join("\n"));
+        var totalProgressReporter = new ProgressReporter();
+        var subreporters = totalProgressReporter.addSubreporters({
+            lineSplitting: 7,
+            symbolFinding: 200,
+            symbolResolving: 2000,
+            symbolSubstituting: 200,
+            lineJoining: 25,
+        });
+        totalProgressReporter.addListener(function (r) {
+            progressCallback(r.getProgress(), r.getAction());
+        });
+        totalProgressReporter.begin("Symbolicating profile...");
+        var lines = getSplitLines(subreporters.lineSplitting, profile);
+        var symbolsToResolve = findSymbolsToResolve(subreporters.symbolFinding, lines);
+        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving, symbolsToResolve, platform, resumeContinuation);
+        var fixedLines = substituteSymbols(subreporters.symbolSubstituting, lines, resolvedSymbols);
+        var fixedProfile = getJoinedLines(subreporters.lineJoining, fixedLines);
+        finishCallback(fixedProfile);
     });
 }
 
@@ -142,19 +188,19 @@ function bucketsBySplittingArray(array, maxItemsPerBucket) {
     return buckets;
 }
 
-// The command line can't get too long so let's not do more than 5000 at a time.
-const kNumSymbolsPerCall = 5000;
+// The command line can't get too long so let's not do more than 1000 at a time.
+const kNumSymbolsPerCall = 1000;
 
 // Run libraries through strip -S so that symbol lookup is faster.
 const kStripLibrary = true;
 
-function readSymbolsLinux(platform, libName, unresolvedList, callback) {
-    dump("Linux sym\n");
+function readSymbolsLinux(reporter, platform, libName, unresolvedList, callback) {
+    reporter.begin("Resolving symbols for library " + libName + "...");
     runAsContinuation(function (resumeContinuation) {
         var resolvedSymbols = {};
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         for (var i = 0; i < buckets.length; i++) {
-            var unresolvedSymbols = bucket[i];
+            var unresolvedSymbols = buckets[i];
             var cmd = "/usr/bin/addr2line -C -f -e '" + libName + "' " + unresolvedSymbols.join(" ");
 
             // Parse
@@ -163,8 +209,9 @@ function readSymbolsLinux(platform, libName, unresolvedList, callback) {
             for (var i = 0; i < unresolvedSymbols.length; i++) {
                 resolvedSymbols[unresolvedSymbols[i]] = outLines[i*2+0] + " " + outLines[i*2+1];
             }
-
+            reporter.setProgress((i * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
         }
+        reporter.finish();
         callback(resolvedSymbols);
     });
 }
@@ -198,7 +245,8 @@ function isx86_64() {
     return sAbi == "x86_64-gcc3";
 }
 
-function readSymbolsMac(platform, libName, unresolvedList, callback) {
+function readSymbolsMac(reporter, platform, libName, unresolvedList, callback) {
+    reporter.begin("Resolving symbols for library " + getFilename(libName) + "...");
     var atos_args = isx86_64() ? " -arch x86_64 " : "";
     var resolvedSymbols = {};
 
@@ -217,18 +265,20 @@ function readSymbolsMac(platform, libName, unresolvedList, callback) {
                 for (var i = 0; i < unresolvedSymbols.length; i++) {
                     resolvedSymbols[unresolvedSymbols[i]] = outLines[i];
                 }
+                reporter.setProgress((j * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
             }
             andThen();
         });
     }, function () {
+        reporter.finish();
         callback(resolvedSymbols);
     });
 }
 
-function read_symbols_lib(libName, unresolvedList, platform, callback) {
+function read_symbols_lib(reporter, libName, unresolvedList, platform, callback) {
     if (platform == "Linux") {
-        readSymbolsLinux(platform, libName, unresolvedList, callback);
+        readSymbolsLinux(reporter, platform, libName, unresolvedList, callback);
     } else if (platform == "Macintosh") {
-        readSymbolsMac(platform, libName, unresolvedList, callback);
+        readSymbolsMac(reporter, platform, libName, unresolvedList, callback);
     }
 }
