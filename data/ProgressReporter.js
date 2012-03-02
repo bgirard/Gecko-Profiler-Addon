@@ -1,3 +1,42 @@
+/**
+ * ProgressReporter
+ *
+ * This class is used by long-winded tasks to report progress to observers.
+ * If a task has subtasks that want to report their own progress, these
+ * subtasks can have their own progress reporters which are hooked up to the
+ * parent progress reporter, resulting in a tree structure. A parent progress
+ * reporter will calculate its progress value as a weighted sum of its
+ * subreporters' progress values.
+ *
+ * A progress reporter has a state, an action, and a progress value.
+ *
+ *  - state is one of STATE_WAITING, STATE_DOING and STATE_FINISHED.
+ *  - action is a string that describes the current task.
+ *  - progress is the progress value as a number between 0 and 1.
+ *
+ * A progress reporter starts out in the WAITING state. The DOING state is
+ * entered with the begin method which also sets the action. While the task is
+ * executing, the progress value can be updated with the setProgress method.
+ * When a task has finished, it can call the finish method which is just a
+ * shorthand for setProgress(1); this will set the state to FINISHED.
+ *
+ * Progress observers can be added with the addListener method which takes a
+ * function callback. Whenever the progress value or state change, all
+ * listener callbacks will be called with the progress reporter object. The
+ * observer can get state, progress value and action by calling the getter
+ * methods getState(), getProgress() and getAction().
+ *
+ * Creating child progress reporters for subtasks can be done with the
+ * addSubreporter(s) methods. If a progress reporter has subreporters, normal
+ * progress report functions (setProgress and finish) can no longer be called.
+ * Instead, the parent reporter will listen to progress changes on its
+ * subreporters and update its state automatically, and then notify its own
+ * listeners.
+ * When adding a subreporter, you are expected to provide an estimated
+ * duration for the subtask. This value will be used as a weight when
+ * calculating the progress of the parent reporter.
+ */
+
 const gDebugExpectedDurations = false;
 
 function ProgressReporter() {
