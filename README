@@ -2,7 +2,7 @@ ABOUT
 =====
 
 Gecko has built-in cross platform profiling support.
-This extension is designed to prevent a front end
+This extension is designed to provide a front end
 to this profiling support.
 
 For more details see:
