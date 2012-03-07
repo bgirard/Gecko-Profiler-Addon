@@ -34,10 +34,13 @@ self.onmessage = function (msg) {
     return;
   }
 
-  var { id, profile } = msg.data;
+  var { id, profile, sharedLibraries } = msg.data;
+
+  sharedLibraries = JSON.parse(sharedLibraries)
+  sharedLibraries.sort(function (a, b) { return a.start - b.start; });
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
-    symbolicate(profile, sPlatform, function (progress, action) {
+    symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
       self.postMessage({ id: id, type: "finished", profile: result });
@@ -61,19 +64,46 @@ function runCommand(cmd, callback) {
 // Compute a map of libraries to resolve
 function findSymbolsToResolve(reporter, lines) {
     reporter.begin("Gathering unresolved symbols...")
-    var symbolsToResolve = {};
+    var addresses = {};
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        if (line.indexOf("l-") == 0 && line.indexOf("@") != -1) {
-            var tagData = line.substring(2).split("@");
-            var library = tagData[0];
-            var offset = tagData[1];
-            if (symbolsToResolve[library] == null) {
-                symbolsToResolve[library] = {};
-            }
-            symbolsToResolve[library][offset] = null;
+        if (line.indexOf("l-") == 0) {
+            var address = line.substring(2);
+            addresses[address] = null;
         }
         reporter.setProgress((i + 1) / lines.length);
+    }
+    reporter.finish();
+    return Object.keys(addresses);
+}
+
+function getContainingLibrary(libs, address) {
+    var left = 0;
+    var right = libs.length - 1;
+    while (left <= right) {
+        var mid = Math.floor((left + right) / 2);
+        if (address >= libs[mid].end)
+            left = mid + 1;
+        else if (address < libs[mid].start)
+            right = mid - 1;
+        else
+            return libs[mid];
+    }
+    return null;
+}
+
+function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
+    reporter.begin("Assigning symbols to libraries...");
+    var symbolsToResolve = {};
+    for (var i = 0; i < addresses.length; i++) {
+        var lib = getContainingLibrary(sharedLibraries, parseInt(addresses[i], 16));
+        if (!lib)
+            continue;
+        if (!(lib.name in symbolsToResolve)) {
+            symbolsToResolve[lib.name] = { library: lib, symbols: [] };
+        }
+        symbolsToResolve[lib.name].symbols.push(addresses[i]);
+        reporter.setProgress((i + 1) / addresses.length);
     }
     reporter.finish();
     return symbolsToResolve;
@@ -95,14 +125,15 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback) {
     reporter.begin("Resolving symbols...");
     var libReporters = {};
     for (var lib in symbolsToResolve) {
-        var expectedDuration = kSymbolicationWarmupTime + Object.keys(symbolsToResolve[lib]).length / kExpectedSymbolsProcessedPerMs;
+        var expectedDuration = kSymbolicationWarmupTime + symbolsToResolve[lib].symbols.length / kExpectedSymbolsProcessedPerMs;
         libReporters[lib] = reporter.addSubreporter(expectedDuration);
     }
     runAsContinuation(function (resumeContinuation) {
         var resolvedSymbols = {};
         for (var lib in symbolsToResolve) {
-            var unresolvedList = Object.keys(symbolsToResolve[lib]);
-            resolvedSymbols[lib] = yield read_symbols_lib(libReporters[lib], lib, unresolvedList, platform, resumeContinuation);
+            yield read_symbols_lib(libReporters[lib], symbolsToResolve[lib].library,
+                                   symbolsToResolve[lib].symbols, platform, resolvedSymbols,
+                                   resumeContinuation);
         }
         setTimeout(function () {
             callback(resolvedSymbols);
@@ -120,18 +151,16 @@ function substituteSymbols(reporter, lines, resolvedSymbols, callback) {
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
         if (line.indexOf("l-???@") == 0) continue;
-        if (line.indexOf("l-") == 0 && line.indexOf("@") != -1) {
-            var tagData = line.substring(2).split("@");
-            var library = tagData[0];
-            var offset = tagData[1];
-            var sym = resolvedSymbols[library][offset];
+        if (line.indexOf("l-") == 0) {
+            var address = line.substring(2);
+            var sym = resolvedSymbols[address];
             if (sym) {
                 if (shouldDropFrame(sym))
                     continue;
                 newProfile.push("l-" + sym);
             } else {
                 newProfile.push(line);
-                dump("FAILED to find symbol for: " + offset + " in " + library + "\n");
+                dump("FAILED to find symbol for " + address + "\n");
             }
         } else {
             newProfile.push(line);
@@ -156,12 +185,13 @@ function getJoinedLines(reporter, lines) {
     return joined;
 }
 
-function symbolicate(profile, platform, progressCallback, finishCallback) {
+function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback) {
     runAsContinuation(function (resumeContinuation) {
         var totalProgressReporter = new ProgressReporter();
         var subreporters = totalProgressReporter.addSubreporters({
             lineSplitting: 7,
             symbolFinding: 200,
+            symbolLibraryAssigning: 200,
             symbolResolving: 2000,
             symbolSubstituting: 200,
             lineJoining: 25,
@@ -171,9 +201,14 @@ function symbolicate(profile, platform, progressCallback, finishCallback) {
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var lines = getSplitLines(subreporters.lineSplitting, profile);
-        var symbolsToResolve = findSymbolsToResolve(subreporters.symbolFinding, lines);
-        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving, symbolsToResolve, platform, resumeContinuation);
-        var fixedLines = substituteSymbols(subreporters.symbolSubstituting, lines, resolvedSymbols);
+        var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
+        var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
+                                                        sharedLibraries, foundSymbols);
+        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
+                                                   symbolsToResolve, platform,
+                                                   resumeContinuation);
+        var fixedLines = substituteSymbols(subreporters.symbolSubstituting,
+                                           lines, resolvedSymbols);
         var fixedProfile = getJoinedLines(subreporters.lineJoining, fixedLines);
         finishCallback(fixedProfile);
     });
@@ -194,14 +229,14 @@ const kNumSymbolsPerCall = 1000;
 // Run libraries through strip -S so that symbol lookup is faster.
 const kStripLibrary = true;
 
-function readSymbolsLinux(reporter, platform, libName, unresolvedList, callback) {
-    reporter.begin("Resolving symbols for library " + libName + "...");
+function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback) {
+    reporter.begin("Resolving symbols for library " + library.name + "...");
     runAsContinuation(function (resumeContinuation) {
-        var resolvedSymbols = {};
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         for (var i = 0; i < buckets.length; i++) {
             var unresolvedSymbols = buckets[i];
-            var cmd = "/usr/bin/addr2line -C -f -e '" + libName + "' " + unresolvedSymbols.join(" ");
+            // XXX need to subtract library start address from all symbols
+            var cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
 
             // Parse
             var addr2lineResult = yield runCommand(cmd, resumeContinuation);
@@ -212,7 +247,7 @@ function readSymbolsLinux(reporter, platform, libName, unresolvedList, callback)
             reporter.setProgress((i * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
         }
         reporter.finish();
-        callback(resolvedSymbols);
+        callback();
     });
 }
 
@@ -245,18 +280,17 @@ function isx86_64() {
     return sAbi == "x86_64-gcc3";
 }
 
-function readSymbolsMac(reporter, platform, libName, unresolvedList, callback) {
-    reporter.begin("Resolving symbols for library " + getFilename(libName) + "...");
+function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback) {
+    reporter.begin("Resolving symbols for library " + getFilename(library.name) + "...");
     var atos_args = isx86_64() ? " -arch x86_64 " : "";
-    var resolvedSymbols = {};
 
-    usingStrippedLibrary(libName, function (strippedLibraryPath, andThen) {
+    usingStrippedLibrary(library.name, function (strippedLibraryPath, andThen) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         runAsContinuation(function (resumeContinuation) {
             for (var j = 0; j < buckets.length; j++) {
                 var unresolvedSymbols = buckets[j];
 
-                var cmd = "/usr/bin/atos" + atos_args + " -l 0x0 -o '" +
+                var cmd = "/usr/bin/atos" + atos_args + " -l 0x" + library.start.toString(16) + " -o '" +
                 strippedLibraryPath + "' " + unresolvedSymbols.join(" ");
 
                 // Parse
@@ -271,14 +305,14 @@ function readSymbolsMac(reporter, platform, libName, unresolvedList, callback) {
         });
     }, function () {
         reporter.finish();
-        callback(resolvedSymbols);
+        callback();
     });
 }
 
-function read_symbols_lib(reporter, libName, unresolvedList, platform, callback) {
+function read_symbols_lib(reporter, library, unresolvedList, platform, resolvedSymbols, callback) {
     if (platform == "Linux") {
-        readSymbolsLinux(reporter, platform, libName, unresolvedList, callback);
+        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
     } else if (platform == "Macintosh") {
-        readSymbolsMac(reporter, platform, libName, unresolvedList, callback);
+        readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
     }
 }
