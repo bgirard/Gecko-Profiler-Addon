@@ -67,7 +67,7 @@ function findSymbolsToResolve(reporter, lines) {
     var addresses = {};
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        if (line.indexOf("l-") == 0) {
+        if (line.indexOf("l-0x") == 0) {
             var address = line.substring(2);
             addresses[address] = null;
         }
@@ -150,8 +150,8 @@ function substituteSymbols(reporter, lines, resolvedSymbols, callback) {
     var newProfile = [];
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        if (line.indexOf("l-???@") == 0) continue;
-        if (line.indexOf("l-") == 0) {
+        if (line.indexOf("l-???") == 0) continue;
+        if (line.indexOf("l-0x") == 0) {
             var address = line.substring(2);
             var sym = resolvedSymbols[address];
             if (sym) {
