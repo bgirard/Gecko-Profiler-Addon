@@ -229,13 +229,20 @@ const kNumSymbolsPerCall = 1000;
 // Run libraries through strip -S so that symbol lookup is faster.
 const kStripLibrary = true;
 
+// Convert all symbols in the array "symbols" to their location relative to the
+// library they're in by subtracting the library start address.
+function relativeToLibrary(library, symbols) {
+    return symbols.map(function (symbol) {
+        return "0x" + (parseInt(symbol, 16) - library.start).toString(16);
+    });
+}
+
 function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback) {
     reporter.begin("Resolving symbols for library " + library.name + "...");
     runAsContinuation(function (resumeContinuation) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         for (var i = 0; i < buckets.length; i++) {
-            var unresolvedSymbols = buckets[i];
-            // XXX need to subtract library start address from all symbols
+            var unresolvedSymbols = relativeToLibrary(library, buckets[i]);
             var cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
 
             // Parse
