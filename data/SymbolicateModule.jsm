@@ -15,7 +15,7 @@ function getWorker() {
 }
 
 var sProfileID = 0;
-function symbolicate(profile, progressCallback, finishCallback) {
+function symbolicate(profile, sharedLibraries, progressCallback, finishCallback) {
   var worker = getWorker();
 
   var id = sProfileID++;
@@ -32,5 +32,5 @@ function symbolicate(profile, progressCallback, finishCallback) {
       }
     }
   });
-  worker.postMessage({ id: id, profile: profile });
+  worker.postMessage({ id: id, profile: profile, sharedLibraries: sharedLibraries });
 }
