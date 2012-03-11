@@ -10,5 +10,18 @@ cd sdk
 . ./bin/activate
 cd ..
 
+# Check if a custom build is found first
+if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app ]
+then
+  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app
+  exit
+fi
+
+if [ -e /Users/markus/code/obj-m-debug/dist/NightlyDebug.app ]
+then
+  cfx run --binary /Users/markus/code/obj-m-debug/dist/NightlyDebug.app
+  exit
+fi
+
+# or use nightly
 cfx run --binary /Applications/FirefoxNightly.app
-#cfx run --binary /Users/markus/code/obj-m-debug/dist/NightlyDebug.app
