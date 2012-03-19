@@ -27,7 +27,7 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
           break;
         case "finished":
           worker.removeEventListener("message", workerSentMessage);
-          finishCallback(msg.data.profile);
+          finishCallback(msg.data.symbolicationTable);
           break;
       }
     }
