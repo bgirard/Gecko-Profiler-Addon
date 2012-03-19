@@ -42,7 +42,10 @@ self.port.on("getprofile_progress", function(val) {
 });
 
 self.port.on("getprofile", function(val) {
-    document.defaultView.postMessage(JSON.stringify({task: "loadProfile", rawProfile: val}), "*");
+    if (unsafeWindow && unsafeWindow.loadProfile)
+      unsafeWindow.loadProfile(val);
+    else
+      document.defaultView.postMessage(JSON.stringify({task: "loadProfile", rawProfile: val}), "*");
 });
 
 init();
