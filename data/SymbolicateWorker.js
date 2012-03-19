@@ -43,10 +43,10 @@ self.onmessage = function (msg) {
     symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
-      self.postMessage({ id: id, type: "finished", profile: result });
+      self.postMessage({ id: id, type: "finished", symbolicationTable: result });
     });    
   } else {
-    self.postMessage({ id: id, type: "finished", profile: result });
+    self.postMessage({ id: id, type: "finished", symbolicationTable: {} });
   }
 }
 
@@ -145,44 +145,11 @@ function shouldDropFrame(symbolName) {
     return dropFrames.indexOf(symbolName) != -1;
 }
 
-function substituteSymbols(reporter, lines, resolvedSymbols, callback) {
-    reporter.begin("Substituting symbols in original profile...");
-    var newProfile = [];
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (line.indexOf("l-???") == 0) continue;
-        if (line.indexOf("l-0x") == 0) {
-            var address = line.substring(2);
-            var sym = resolvedSymbols[address];
-            if (sym) {
-                if (shouldDropFrame(sym))
-                    continue;
-                newProfile.push("l-" + sym);
-            } else {
-                newProfile.push(line);
-                dump("FAILED to find symbol for " + address + "\n");
-            }
-        } else {
-            newProfile.push(line);
-        }
-        reporter.setProgress((i + 1) / lines.length);
-    }
-    reporter.finish();
-    return newProfile;
-}
-
 function getSplitLines(reporter, profile) {
     reporter.begin("Splitting profile into lines...");
     var split = profile.split("\n");
     reporter.finish();
     return split;
-}
-
-function getJoinedLines(reporter, lines) {
-    reporter.begin("Joining lines into new profile...");
-    var joined = lines.join("\n");
-    reporter.finish();
-    return joined;
 }
 
 function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback) {
@@ -193,8 +160,6 @@ function symbolicate(profile, sharedLibraries, platform, progressCallback, finis
             symbolFinding: 200,
             symbolLibraryAssigning: 200,
             symbolResolving: 2000,
-            symbolSubstituting: 200,
-            lineJoining: 25,
         });
         totalProgressReporter.addListener(function (r) {
             progressCallback(r.getProgress(), r.getAction());
@@ -207,10 +172,7 @@ function symbolicate(profile, sharedLibraries, platform, progressCallback, finis
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation);
-        var fixedLines = substituteSymbols(subreporters.symbolSubstituting,
-                                           lines, resolvedSymbols);
-        var fixedProfile = getJoinedLines(subreporters.lineJoining, fixedLines);
-        finishCallback(fixedProfile);
+        finishCallback(resolvedSymbols);
     });
 }
 
