@@ -42,8 +42,7 @@ self.port.on("getprofile_progress", function(val) {
 });
 
 self.port.on("getprofile", function(val) {
-    document.getElementById("data").innerHTML = val;
-    document.getElementsByTagName("button")[0].click();
+    loadProfile(val);
 });
 
 init();
