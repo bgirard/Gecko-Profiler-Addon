@@ -17,9 +17,9 @@ then
   exit
 fi
 
-if [ -e /Users/markus/code/obj-m-debug/dist/NightlyDebug.app ]
+if [ -e /Users/markus/code/obj-m-opt/dist/Nightly.app ]
 then
-  cfx run --binary /Users/markus/code/obj-m-debug/dist/NightlyDebug.app
+  cfx run --binary /Users/markus/code/obj-m-opt/dist/Nightly.app
   exit
 fi
 

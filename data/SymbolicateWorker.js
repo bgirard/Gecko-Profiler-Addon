@@ -43,11 +43,21 @@ self.onmessage = function (msg) {
     symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
-      self.postMessage({ id: id, type: "finished", symbolicationTable: result });
+      postSymbolicatedProfile(id, profile, result);
     });    
   } else {
-    self.postMessage({ id: id, type: "finished", symbolicationTable: {} });
+    postSymbolicatedProfile(id, profile, {});
   }
+}
+
+function postSymbolicatedProfile(id, profile, symbolicationTable) {
+    var bundle = {
+        format: "profileStringWithSymbolicationTable,1",
+        profileString: profile,
+        symbolicationTable: symbolicationTable
+    };
+
+    self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle) });
 }
 
 function runCommand(cmd, callback) {
@@ -224,10 +234,17 @@ function getFilename(fullPath) {
     return fullPath.substring(fullPath.lastIndexOf("/") + 1);
 }
 
-function usingStrippedLibrary(originalLibraryPath, callback, finishCallback) {
+function usingStrippedLibrary(originalLibraryPath, reporter, callback, finishCallback) {
     var libraryFilename = getFilename(originalLibraryPath);
     if (!kStripLibrary || libraryFilename != "XUL")
-        return callback(originalLibraryPath, finishCallback);
+        return callback(originalLibraryPath, reporter, function () { finishCallback(reporter); });
+
+    var subreporters = reporter.addSubreporters({
+        strip: 1000,
+        readSymbols: 5000
+    });
+
+    subreporters.strip.begin("Stripping symbols from library " + libraryFilename);
 
     runAsContinuation(function (resumeContinuation) {
         // Make a copy of the library in a temporary location and run it through
@@ -240,8 +257,9 @@ function usingStrippedLibrary(originalLibraryPath, callback, finishCallback) {
         var stripCommand = "strip -S '" + originalLibraryPath + "' -o '" +
                              strippedLibraryPath + "'";
         yield runCommand(stripCommand, resumeContinuation);
-        yield callback(strippedLibraryPath, resumeContinuation);
-        runCommand("rm -rf " + tmpDir, finishCallback);
+        subreporters.strip.finish();
+        yield callback(strippedLibraryPath, subreporters.readSymbols, resumeContinuation);
+        runCommand("rm -rf " + tmpDir, function () { finishCallback(subreporters.readSymbols); });
     });
 }
 
@@ -253,7 +271,7 @@ function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSym
     reporter.begin("Resolving symbols for library " + getFilename(library.name) + "...");
     var atos_args = isx86_64() ? " -arch x86_64 " : "";
 
-    usingStrippedLibrary(library.name, function (strippedLibraryPath, andThen) {
+    usingStrippedLibrary(library.name, reporter, function (strippedLibraryPath, reporter, andThen) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         runAsContinuation(function (resumeContinuation) {
             for (var j = 0; j < buckets.length; j++) {
@@ -272,7 +290,7 @@ function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSym
             }
             andThen();
         });
-    }, function () {
+    }, function (reporter) {
         reporter.finish();
         callback();
     });

@@ -23,11 +23,11 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
     if (msg.data.id == id) {
       switch (msg.data.type) {
         case "progress":
-          progressCallback(Math.floor(msg.data.progress * 100) + "% " + msg.data.action);
+          progressCallback(msg.data);
           break;
         case "finished":
           worker.removeEventListener("message", workerSentMessage);
-          finishCallback(msg.data.symbolicationTable);
+          finishCallback(msg.data.profile);
           break;
       }
     }
