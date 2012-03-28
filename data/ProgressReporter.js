@@ -103,7 +103,7 @@ ProgressReporter.prototype = {
     if (this._subreporters.length > 0)
       throw "Can't call setProgress on a progress reporter with subreporters";
     if (progress != this._progress &&
-        (progress == 1 || (progress - this._progress >= 0.05))) {
+        (progress == 1 || (progress - this._progress >= 0.01))) {
       this._progress = progress;
       if (progress == 1)
         this._transitionToFinished();

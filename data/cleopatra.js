@@ -34,18 +34,19 @@
  * ***** END LICENSE BLOCK ***** */
  
 function init() {
-    self.port.emit("getprofile", "test");   
+    self.port.emit("getprofile", "test");
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 }
 
-self.port.on("getprofile_progress", function(val) {
-    document.getElementById("data").innerHTML = val;
+self.port.on("getprofile_progress", function(e) {
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress}), "*");
 });
 
 self.port.on("getprofile", function(val) {
-    if (unsafeWindow && unsafeWindow.loadProfile)
-      unsafeWindow.loadProfile(val);
+    if (window.unsafeWindow && unsafeWindow.loadProfile)
+      unsafeWindow.importFromAddonFinish(val);
     else
-      document.defaultView.postMessage(JSON.stringify({task: "loadProfile", rawProfile: val}), "*");
+      document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
 });
 
 init();
