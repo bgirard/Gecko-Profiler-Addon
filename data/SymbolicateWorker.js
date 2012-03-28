@@ -34,9 +34,9 @@ self.onmessage = function (msg) {
     return;
   }
 
-  var { id, profile, sharedLibraries } = msg.data;
+  var { id, profile, sharedLibraries, uri } = msg.data;
 
-  sharedLibraries = JSON.parse(sharedLibraries)
+  sharedLibraries = JSON.parse(sharedLibraries);
   sharedLibraries.sort(function (a, b) { return a.start - b.start; });
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
@@ -45,6 +45,10 @@ self.onmessage = function (msg) {
     }, function (result) {
       postSymbolicatedProfile(id, profile, result);
     });    
+  } else if (sPlatform == "Windows") {
+    symbolicateWindows(profile, sharedLibraries, uri, function (result) {
+      self.postMessage({ id: id, type: "finished", symbolicationTable: result });
+    });
   } else {
     postSymbolicatedProfile(id, profile, {});
   }
@@ -184,6 +188,96 @@ function symbolicate(profile, sharedLibraries, platform, progressCallback, finis
                                                    resumeContinuation);
         finishCallback(resolvedSymbols);
     });
+}
+
+function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
+    var totalProgressReporter = new ProgressReporter();
+    var subreporters = totalProgressReporter.addSubreporters({
+        lineSplitting: 7,
+        symbolFinding: 200
+    });
+
+    totalProgressReporter.begin("Symbolicating profile...");
+    var lines = getSplitLines(subreporters.lineSplitting, profile);
+    var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
+    stackAddresses.sort();
+
+    // Drop memory modules not referenced by the stack
+    var memoryMap = [];
+    var pcIndex = 0;
+    var libIndex = 0;
+    var addedLib = false;
+    while (pcIndex < stackAddresses.length && libIndex < sharedLibraries.length) {
+        var pc = parseInt(stackAddresses[pcIndex], 16);
+        var lib = sharedLibraries[libIndex];
+        if (lib.start <= pc && pc < lib.end) {
+            if (!addedLib) {
+                var libSize = lib.end - lib.start;
+                var module = [lib.start, lib.name, libSize, lib.pdbAge, lib.pdbSignature, lib.pdbName];
+                memoryMap.push(module);
+                addedLib = true;
+            }
+            ++pcIndex;
+        } else if (pc >= lib.end) {
+            ++libIndex;
+            addedLib = false;
+        } else {
+            // PC does not belong to any module
+            ++pcIndex;
+        }
+    }
+
+    symbolicationRequest = [{ "stack": stackAddresses, "memoryMap": memoryMap }];
+    var requestJson = JSON.stringify(symbolicationRequest);
+
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", uri, true);
+        xhr.setRequestHeader("Content-type", "application/json");
+        xhr.setRequestHeader("Content-length", requestJson.length);
+        xhr.setRequestHeader("Connection", "close");
+        xhr.send(requestJson);
+    } catch (e) {
+        dump("Sending SymbolicationServer request failed: " + e + " (" + uri + ")\n");
+        var errorString = "Could not send symbolication request to server at '" + uri + "'";
+        errorString += "\n\nPlease confirm the \"profiler.symbolicationUrl\" configuration setting is correct.";
+        finishCallback( { "error": errorString } );
+        return;
+    }
+
+    xhr.onreadystatechange = function (evt) {
+        if (xhr.readyState != 4)
+            return;
+
+        if (xhr.status != 200) {
+            dump("SymbolicationServer request failed: HTTP " + xhr.status + " (" + uri + ")\n");
+            if (xhr.status == 0) {
+                var errorString = "Could not connect to symbolication server at " + uri;
+                errorString += "\n\nPlease verify that you are connected to the Internet.";
+                finishCallback( { "error": errorString } );
+            } else {
+                var errorString = "Symbolication request to " + uri + " failed with error code HTTP " + xhr.status;
+                errorString += "\n\nPlease try again later.";
+                finishCallback( { "error": errorString } );
+            }
+            return;
+        }
+
+        try {
+            var jsonResponse = JSON.parse(xhr.responseText);
+            var resolvedStack = jsonResponse[0];
+            var resolvedSymbols = {};
+            for (var i = 0; i < resolvedStack.length; ++i) {
+                resolvedSymbols[stackAddresses[i]] = resolvedStack[i];
+            }
+            finishCallback(resolvedSymbols);
+        } catch (e) {
+            dump("Exception parsing SymbolicationServer response: " + e + "\n");
+            var errorString = "Could not understand response from symbolication server at " + uri;
+            errorString += "\n\nPlease consider filing a bug at https://bugzilla.mozilla.org/";
+            finishCallback( { "error": errorString } );
+        }
+    };
 }
 
 function bucketsBySplittingArray(array, maxItemsPerBucket) {
