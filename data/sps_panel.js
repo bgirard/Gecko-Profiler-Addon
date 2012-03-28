@@ -73,8 +73,7 @@ self.port.on("getprofile", function(val) {
 });
 
 self.port.on("responsive", function(val) {
-dump("draw\n");
-    let canvas = document.getElementsByTagName("canvas")[0];
+  let canvas = document.getElementsByTagName("canvas")[0];
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 1;
   reset(ctx, canvas);
