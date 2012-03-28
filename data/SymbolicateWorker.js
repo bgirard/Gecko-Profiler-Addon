@@ -43,11 +43,21 @@ self.onmessage = function (msg) {
     symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
-      self.postMessage({ id: id, type: "finished", symbolicationTable: result });
+      postSymbolicatedProfile(id, profile, result);
     });    
   } else {
-    self.postMessage({ id: id, type: "finished", symbolicationTable: {} });
+    postSymbolicatedProfile(id, profile, {});
   }
+}
+
+function postSymbolicatedProfile(id, profile, symbolicationTable) {
+    var bundle = {
+        format: "profileStringWithSymbolicationTable,1",
+        profileString: profile,
+        symbolicationTable: symbolicationTable
+    };
+
+    self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle) });
 }
 
 function runCommand(cmd, callback) {
