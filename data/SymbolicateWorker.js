@@ -229,7 +229,9 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
         xhr.send(requestJson);
     } catch (e) {
         dump("Sending SymbolicationServer request failed: " + e + " (" + uri + ")\n");
-        finishCallback( {} );
+        var errorString = "Could not send symbolication request to server at '" + uri + "'";
+        errorString += "\n\nPlease confirm the \"profiler.symbolicationUrl\" configuration setting is correct.";
+        finishCallback( { "error": errorString } );
         return;
     }
 
@@ -239,7 +241,15 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
         if (xhr.status != 200) {
             dump("SymbolicationServer request failed: HTTP " + xhr.status + " (" + uri + ")\n");
-            finishCallback( {} );
+            if (xhr.status == 0) {
+                var errorString = "Could not connect to symbolication server at " + uri;
+                errorString += "\n\nPlease verify that you are connected to the Internet.";
+                finishCallback( { "error": errorString } );
+            } else {
+                var errorString = "Symbolication request to " + uri + " failed with error code HTTP " + xhr.status;
+                errorString += "\n\nPlease try again later.";
+                finishCallback( { "error": errorString } );
+            }
             return;
         }
 
@@ -253,7 +263,9 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
             finishCallback(resolvedSymbols);
         } catch (e) {
             dump("Exception parsing SymbolicationServer response: " + e + "\n");
-            finishCallback( {} );
+            var errorString = "Could not understand response from symbolication server at " + uri;
+            errorString += "\n\nPlease consider filing a bug at https://bugzilla.mozilla.org/";
+            finishCallback( { "error": errorString } );
         }
     };
 }
