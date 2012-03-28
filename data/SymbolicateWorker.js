@@ -47,7 +47,7 @@ self.onmessage = function (msg) {
     });    
   } else if (sPlatform == "Windows") {
     symbolicateWindows(profile, sharedLibraries, uri, function (result) {
-      self.postMessage({ id: id, type: "finished", symbolicationTable: result });
+      postSymbolicatedProfile(id, profile, result);
     });
   } else {
     postSymbolicatedProfile(id, profile, {});
