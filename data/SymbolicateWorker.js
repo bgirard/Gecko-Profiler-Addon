@@ -55,13 +55,19 @@ self.onmessage = function (msg) {
 }
 
 function postSymbolicatedProfile(id, profile, symbolicationTable) {
+    var errorString = null;
+    if ("error" in symbolicationTable) {
+        errorString = symbolicationTable.error;
+        symbolicationTable = {};
+    }
+
     var bundle = {
         format: "profileStringWithSymbolicationTable,1",
         profileString: profile,
         symbolicationTable: symbolicationTable
     };
 
-    self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle) });
+    self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle), error: errorString });
 }
 
 function runCommand(cmd, callback) {

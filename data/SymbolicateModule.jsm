@@ -29,6 +29,12 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
           break;
         case "finished":
           worker.removeEventListener("message", workerSentMessage);
+          if (msg.data.error) {
+            var promptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                                  .getService(Ci.nsIPromptService);
+            promptService.alert(null, "Symbolication Failed", msg.data.error);
+          }
+
           finishCallback(msg.data.profile);
           break;
       }
