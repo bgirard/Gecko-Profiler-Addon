@@ -69,12 +69,18 @@ self.port.on("change_status", function(val) {
     if (chkJank) {
       chkJank.disabled = !has_feature("jank") || val.isActive;
       chkJank.checked = has_feature_active("jank");
+      chkJank.onclick = function() {
+        self.port.emit("set_feature", {feature: "jank", value: chkJank.checked});
+      }
     }
 
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
       chkStackwalk.checked = has_feature_active("stackwalk");
+      chkStackwalk.onclick = function() {
+        self.port.emit("set_feature", {feature: "stackwalk", value: chkJank.checked});
+      }
     }
 
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
