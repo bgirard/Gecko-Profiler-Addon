@@ -35,6 +35,14 @@
  
 var gStartedWithFeatures = [];
 var gFeatureList = [];
+var gUpdateInterval = null;
+
+function has_feature(feature) {
+  return gFeatureList.indexOf(feature) !== -1;
+}
+function has_feature_active(feature) {
+  return gStartedWithFeatures.indexOf(feature) !== -1;
+}
 
 function sps_toggle_active() {
     self.port.emit("toggle", "test");   
@@ -42,7 +50,6 @@ function sps_toggle_active() {
 function sps_get_responsive() {
     self.port.emit("responsive", "test");  
 }
-var gUpdateInterval = null;
 
 self.port.on("onShow", function(val) {
     if (!gUpdateInterval)
@@ -57,9 +64,22 @@ self.port.on("profiler_features", function(val) {
 });
 
 self.port.on("change_status", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
+
+    var chkJank = document.getElementById("chkJank");
+    if (chkJank) {
+      chkJank.disabled = !has_feature("jank") || val.isActive;
+      chkJank.checked = has_feature_active("jank");
+    }
+
+    var chkStackwalk = document.getElementById("chkStackwalk");
+    if (chkStackwalk) {
+      chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
+      chkStackwalk.checked = has_feature_active("stackwalk");
+    }
+
+    document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
