@@ -50,6 +50,8 @@ self.port.on("onHide", function(val) {
         clearInterval(gUpdateInterval);
     gUpdateInterval = null;
 });
+self.port.on("profiler_features", function(val) {
+});
 
 self.port.on("change_status", function(val) {
     document.getElementById("btnToggleActive").innerHTML = val;
@@ -60,7 +62,7 @@ document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 function bugzilla_file_bug() {
     self.port.emit("filebug", "test");
 }
-document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
+//document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
 
 function sps_save() {

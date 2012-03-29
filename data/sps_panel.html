@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
   <style type="text/css">
@@ -12,7 +13,9 @@
   <body>
     Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
     Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
-    Bugzilla: <button id="btnFileBug" type="button">File Bug</button>
-    <canvas width="120" height="60"></canvas>
+    <!--Bugzilla: <button id="btnFileBug" type="button">File Bug</button>-->
+    <canvas width="120" height="60"></canvas><br>
+    <input id=chkJank type="checkbox" disabled="disabled"/> Jank-Only
+    <input id=chkStackwalk type="checkbox" disabled="disabled"/> Stackwalk
   </body>
 </html>
