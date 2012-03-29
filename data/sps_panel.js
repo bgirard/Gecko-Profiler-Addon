@@ -33,13 +33,23 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
+var gStartedWithFeatures = [];
+var gFeatureList = [];
+var gUpdateInterval = null;
+
+function has_feature(feature) {
+  return gFeatureList.indexOf(feature) !== -1;
+}
+function has_feature_active(feature) {
+  return gStartedWithFeatures.indexOf(feature) !== -1;
+}
+
 function sps_toggle_active() {
     self.port.emit("toggle", "test");   
 }
 function sps_get_responsive() {
     self.port.emit("responsive", "test");  
 }
-var gUpdateInterval = null;
 
 self.port.on("onShow", function(val) {
     if (!gUpdateInterval)
@@ -52,7 +62,28 @@ self.port.on("onHide", function(val) {
 });
 
 self.port.on("change_status", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = val;
+    gStartedWithFeatures = val.startedWithFeatures;
+    gFeatureList = val.profilerFeatures;
+
+    var chkJank = document.getElementById("chkJank");
+    if (chkJank) {
+      chkJank.disabled = !has_feature("jank") || val.isActive;
+      chkJank.checked = has_feature_active("jank");
+      chkJank.onclick = function() {
+        self.port.emit("set_feature", {feature: "jank", value: chkJank.checked});
+      }
+    }
+
+    var chkStackwalk = document.getElementById("chkStackwalk");
+    if (chkStackwalk) {
+      chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
+      chkStackwalk.checked = has_feature_active("stackwalk");
+      chkStackwalk.onclick = function() {
+        self.port.emit("set_feature", {feature: "stackwalk", value: chkJank.checked});
+      }
+    }
+
+    document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
@@ -60,7 +91,7 @@ document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 function bugzilla_file_bug() {
     self.port.emit("filebug", "test");
 }
-document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
+//document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
 
 function sps_save() {
@@ -73,8 +104,7 @@ self.port.on("getprofile", function(val) {
 });
 
 self.port.on("responsive", function(val) {
-dump("draw\n");
-    let canvas = document.getElementsByTagName("canvas")[0];
+  let canvas = document.getElementsByTagName("canvas")[0];
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 1;
   reset(ctx, canvas);

@@ -3,6 +3,8 @@ var EXPORTED_SYMBOLS = ["symbolicate"];
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+const DEFAULT_SYMBOLICATION_URL = "http://127.0.0.1:8000";
+
 var sWorker = null;
 function getWorker() {
   if (!sWorker) {
@@ -27,10 +29,26 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
           break;
         case "finished":
           worker.removeEventListener("message", workerSentMessage);
+          if (msg.data.error) {
+            var promptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                                  .getService(Ci.nsIPromptService);
+            promptService.alert(null, "Symbolication Failed", msg.data.error);
+          }
+
           finishCallback(msg.data.profile);
           break;
       }
     }
   });
-  worker.postMessage({ id: id, profile: profile, sharedLibraries: sharedLibraries });
+
+  var uri = "";
+  try {
+      var prefs = Cc["@mozilla.org/preferences-service;1"]
+                  .getService(Ci.nsIPrefService).getBranch("profiler.");
+      uri = prefs.getCharPref("symbolicationUrl");
+  } catch (e) {
+      uri = DEFAULT_SYMBOLICATION_URL;
+  }
+
+  worker.postMessage({ id: id, profile: profile, sharedLibraries: sharedLibraries, uri: uri });
 }

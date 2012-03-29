@@ -6,6 +6,8 @@ function init(platform) {
         lib = ctypes.open("/lib64/libc.so.6"); 
     } else if (platform == "Macintosh"){
         lib = ctypes.open("/usr/lib/libc.dylib"); 
+    } else if (platform == "Windows") {
+        return;
     } else {
         throw "Unknown platform";
     }
