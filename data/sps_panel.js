@@ -60,8 +60,6 @@ self.port.on("onHide", function(val) {
         clearInterval(gUpdateInterval);
     gUpdateInterval = null;
 });
-self.port.on("profiler_features", function(val) {
-});
 
 self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
