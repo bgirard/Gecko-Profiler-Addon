@@ -33,6 +33,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
+var gStartedWithFeatures = [];
+var gFeatureList = [];
+
 function sps_toggle_active() {
     self.port.emit("toggle", "test");   
 }
@@ -54,7 +57,9 @@ self.port.on("profiler_features", function(val) {
 });
 
 self.port.on("change_status", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = val;
+    document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
+    gStartedWithFeatures = val.startedWithFeatures;
+    gFeatureList = val.profilerFeatures;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
