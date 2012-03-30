@@ -79,7 +79,7 @@ self.port.on("change_status", function(val) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
       chkStackwalk.checked = has_feature_active("stackwalk");
       chkStackwalk.onclick = function() {
-        self.port.emit("set_feature", {feature: "stackwalk", value: chkJank.checked});
+        self.port.emit("set_feature", {feature: "stackwalk", value: chkStackwalk.checked});
       }
     }
 
