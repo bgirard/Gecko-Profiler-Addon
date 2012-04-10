@@ -61,11 +61,21 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
         symbolicationTable = {};
     }
 
-    var bundle = {
-        format: "profileStringWithSymbolicationTable,1",
-        profileString: profile,
-        symbolicationTable: symbolicationTable
-    };
+    var bundle;
+
+    if (profile instanceof String) {
+      bundle = {
+          format: "profileStringWithSymbolicationTable,1",
+          profileString: profile,
+          symbolicationTable: symbolicationTable
+      };
+    } else {
+      bundle = {
+          format: "profileJSWithSymbolicationTable,1",
+          profileString: profile,
+          symbolicationTable: symbolicationTable
+      };
+    }
 
     self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle), error: errorString });
 }
@@ -173,6 +183,36 @@ function getSplitLines(reporter, profile) {
 }
 
 function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+    if (profile instanceof String) {
+      return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
+    } else {
+      return symbolicateJSProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
+    }
+}
+
+function symbolicateJSProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+    runAsContinuation(function (resumeContinuation) {
+        var totalProgressReporter = new ProgressReporter();
+        var subreporters = totalProgressReporter.addSubreporters({
+            symbolFinding: 200,
+            symbolLibraryAssigning: 200,
+            symbolResolving: 2000,
+        });
+        totalProgressReporter.addListener(function (r) {
+            progressCallback(r.getProgress(), r.getAction());
+        });
+        totalProgressReporter.begin("Symbolicating profile...");
+        var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
+        var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
+                                                        sharedLibraries, foundSymbols);
+        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
+                                                   symbolsToResolve, platform,
+                                                   resumeContinuation);
+        finishCallback(resolvedSymbols);
+    });
+}
+
+function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
     runAsContinuation(function (resumeContinuation) {
         var totalProgressReporter = new ProgressReporter();
         var subreporters = totalProgressReporter.addSubreporters({
