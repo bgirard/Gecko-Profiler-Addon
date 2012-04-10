@@ -63,8 +63,8 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
     var bundle;
 
+    if (typeof profile === "string") {
 
-    if (typeof "foo" === "string") {
       bundle = {
           format: "profileStringWithSymbolicationTable,1",
           profileString: profile,
