@@ -99,6 +99,11 @@ function sps_save() {
 }
 document.getElementById("btnSave").onclick = sps_save;
 
+function open_settings() {
+    self.port.emit("opensettings", "");
+}
+document.getElementById("btnSettings").onclick = open_settings;
+
 self.port.on("getprofile", function(val) {
     document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;
 });

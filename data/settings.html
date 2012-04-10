@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gecko Profiler - Settings</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/ui.css">
+  </head>
+  <body>
+    <div id="ui">
+      <ul id="fileList">
+        <li onclick="select_tab('tabSimple');" id="tabSimple" class="fileListItem">
+          <span class="fileListItemTitle">
+            Simple Configuration
+          </span>
+          <span class="fileListItemDescription">
+            Select from simple pre-set configurations.
+          </span>
+        </li>
+        <li onclick="select_tab('tabAdvanced');" id="tabAdvanced" class="fileListItem">
+          <span class="fileListItemTitle">
+            Advanced Configuration
+          </span>
+          <span class="fileListItemDescription">
+            Select custom and experimental features.
+          </span>
+        </li>
+      </ul>
+      <div id="infobar">
+        bar
+      </div>
+      <div id="mainarea">
+        test
+      <div class="profileEntryPane">
+       <h1>Upload your profile here:</h1> 
+      </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    var lastSelected = null;
+    function select_tab(tabId) {
+      if (lastSelected) {
+        lastSelected.classList.remove("selected");
+      }
+      var tab = document.getElementById(tabId);
+      tab.classList.add("selected");
+      lastSelected = tab;
+    }
+    select_tab("tabSimple");
+  </script>
+</html>
