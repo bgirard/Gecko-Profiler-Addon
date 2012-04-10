@@ -107,7 +107,7 @@ function findSymbolsToResolve(reporter, lines) {
     return Object.keys(addresses);
 }
 
-function findSymbolsToResolveJS(reporter, profile) {
+function findSymbolsToResolveJSON(reporter, profile) {
     reporter.begin("Gathering unresolved symbols...")
     var addresses = {};
     if (!profile.threads) {
@@ -211,11 +211,11 @@ function symbolicate(profile, sharedLibraries, platform, progressCallback, finis
     if (profile instanceof String) {
       return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
     } else {
-      return symbolicateJSProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
+      return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
     }
 }
 
-function symbolicateJSProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
     runAsContinuation(function (resumeContinuation) {
         var totalProgressReporter = new ProgressReporter();
         var subreporters = totalProgressReporter.addSubreporters({
@@ -227,7 +227,7 @@ function symbolicateJSProfile(profile, sharedLibraries, platform, progressCallba
             progressCallback(r.getProgress(), r.getAction());
         });
         totalProgressReporter.begin("Symbolicating profile...");
-        var foundSymbols = findSymbolsToResolveJS(subreporters.symbolFinding, profile);
+        var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
