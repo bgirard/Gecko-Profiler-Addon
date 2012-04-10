@@ -71,8 +71,8 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
       };
     } else {
       bundle = {
-          format: "profileJSWithSymbolicationTable,1",
-          profileString: profile,
+          format: "profileJSONWithSymbolicationTable,1",
+          profileJSON: profile,
           symbolicationTable: symbolicationTable
       };
     }
@@ -103,6 +103,31 @@ function findSymbolsToResolve(reporter, lines) {
         }
         reporter.setProgress((i + 1) / lines.length);
     }
+    reporter.finish();
+    return Object.keys(addresses);
+}
+
+function findSymbolsToResolveJS(reporter, profile) {
+    reporter.begin("Gathering unresolved symbols...")
+    var addresses = {};
+    if (!profile.threads) {
+      return Object.keys(addresses);
+    }
+    for (var i = 0; i < profile.threads.length; i++) {
+        var thread = profile.threads[i];
+        if (!thread.samples)
+            continue;
+        for (var j = 0; j < thread.samples.length; j++) {
+            var sample = thread.samples[j];
+            if (!sample.frames)
+                continue;
+            for (var k = 0; k < sample.frames.length; k++) {
+                var frame = sample.frames[k];
+                addresses[frame.location] = null;
+            }
+        }
+    }
+
     reporter.finish();
     return Object.keys(addresses);
 }
@@ -202,7 +227,7 @@ function symbolicateJSProfile(profile, sharedLibraries, platform, progressCallba
             progressCallback(r.getProgress(), r.getAction());
         });
         totalProgressReporter.begin("Symbolicating profile...");
-        var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
+        var foundSymbols = findSymbolsToResolveJS(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
