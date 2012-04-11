@@ -209,7 +209,7 @@ function getSplitLines(reporter, profile) {
 }
 
 function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback) {
-    if (profile instanceof String) {
+    if (typeof profile === "string") {
       return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
     } else {
       return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
