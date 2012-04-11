@@ -1,14 +1,23 @@
 var popen, fread, pclose;
 
+var inited = false;
+
 function init(platform) {
     var lib;
     if (platform == "Linux") {
-        lib = ctypes.open("/lib64/libc.so.6"); 
+        var libcLoc = "/lib/x86_64-linux-gnu/libc.so.6";
+        try {
+            lib = ctypes.open(libcLoc); 
+        } catch(err) {
+            dump("Could not open libc at '" + libcLoc + "'\n");
+            throw "Could not open libc at '" + libcLoc + "'";
+        }
     } else if (platform == "Macintosh"){
         lib = ctypes.open("/usr/lib/libc.dylib"); 
     } else if (platform == "Windows") {
         return;
     } else {
+        dump("Unknown plat\n");
         throw "Unknown platform";
     }
     
@@ -33,14 +42,12 @@ function init(platform) {
                          ctypes.int,     // Return int
                          ctypes.voidptr_t
                             );
+    inited = true;
 }
-
-var inited = false;
 
 self.onmessage = function (msg) {
   if (!inited) {
     init(msg.data);
-    inited = true;
     return;
   }
 
