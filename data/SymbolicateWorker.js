@@ -379,17 +379,19 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
     reporter.begin("Resolving symbols for library " + library.name + "...");
     runAsContinuation(function (resumeContinuation) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
-        for (var i = 0; i < buckets.length; i++) {
-            var unresolvedSymbols = relativeToLibrary(library, buckets[i]);
+        for (var j = 0; j < buckets.length; j++) {
+            var unresolvedSymbols = relativeToLibrary(library, buckets[j]);
+            //dump("addr2line for lib: " + library.name + ", " + unresolvedSymbols.length + "\n");
             var cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
 
             // Parse
             var addr2lineResult = yield runCommand(cmd, resumeContinuation);
+            //dump(addr2lineResult + "\n");
             var outLines = addr2lineResult.split("\n");
             for (var i = 0; i < unresolvedSymbols.length; i++) {
-                resolvedSymbols[unresolvedSymbols[i]] = outLines[i*2+0] + " " + outLines[i*2+1];
+                resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1];
             }
-            reporter.setProgress((i * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
+            reporter.setProgress((j * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
         }
         reporter.finish();
         callback();
