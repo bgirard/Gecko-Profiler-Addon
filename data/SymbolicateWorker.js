@@ -39,6 +39,13 @@ self.onmessage = function (msg) {
   sharedLibraries = JSON.parse(sharedLibraries);
   sharedLibraries.sort(function (a, b) { return a.start - b.start; });
 
+  // version convert older sharedLibraries formats
+  for (var i = 0; i < sharedLibraries.length; i++) {
+    if (sharedLibraries[i].offset == null) {
+      sharedLibraries[i].offset = 0;
+    }
+  }
+
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
     symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
@@ -371,7 +378,7 @@ const kStripLibrary = true;
 // library they're in by subtracting the library start address.
 function relativeToLibrary(library, symbols) {
     return symbols.map(function (symbol) {
-        return "0x" + (parseInt(symbol, 16) - library.start).toString(16);
+        return "0x" + (parseInt(symbol, 16) - library.start + library.offset).toString(16);
     });
 }
 
