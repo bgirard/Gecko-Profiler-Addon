@@ -5,18 +5,20 @@
 var tabLastSelected = null;
 var gStartedWithFeatures = [];
 var gFeatureList = [];
+var gFeaturesPrefs = {};
 
 function has_feature(feature) {
     return gFeatureList.indexOf(feature) !== -1;
 }
 function has_feature_active(feature) {
-    return gStartedWithFeatures.indexOf(feature) !== -1;
+    return gFeaturesPrefs[feature] === true;
 }
 
 self.port.on("change_status", function(val) {
   dump("Got feature change\n");
   gStartedWithFeatures = val.startedWithFeatures;
   gFeatureList = val.profilerFeatures;
+  gFeaturesPrefs = val.profilerFeaturesPrefs;
   if (tabLastSelected)
     select_tab(tabLastSelected.id);
 });
@@ -39,7 +41,7 @@ function select_tab(tabId) {
 }
 
 var featureDescription = {
-  "stackwalking" : "Enable stackwalking in <a href='http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-profiling/'>profiling-nightly</a> or custom profiling builds. Custom builds should specify: 'ac_add_options --enable-profiling'",
+  "stackwalk" : "Enable stackwalking in <a href='http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-profiling/'>profiling-nightly</a> or custom profiling builds. Custom builds should specify: 'ac_add_options --enable-profiling'",
   "jank" : "Only record samples when the application is not responding. Useful for collecting the source of hangs over a large timespan.",
   "adb" : "Profile debug version of fennec, this will not work on nightlies. Install 'adb' on your path, and connect a device via usb debugging.",
 };
@@ -60,7 +62,7 @@ function addFeatureDiv(div, name, featureName, desc) {
   };
   
   var featureCheckbox = document.createElement("input");
-  featureCheckbox.checked = has_feature_active(name.toLowerCase());
+  featureCheckbox.checked = has_feature_active(featureName);
   featureCheckbox.type = "checkbox";
   feature.appendChild(featureCheckbox);
   var featureText = document.createElement("text");
@@ -86,7 +88,7 @@ function selectTabSimple(mainAreaDiv) {
   featuresDiv.textContent = "Features";
   rowCount = 0;
 
-  var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Stackwalk", "stackwalking", "Mouse over text");
+  var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Stackwalk", "stackwalk", "Mouse over text");
   var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Jank", "jank", "Mouse over text");
 }
 function selectTabAdvanced(mainAreaDiv) {
