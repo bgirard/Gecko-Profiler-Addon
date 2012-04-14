@@ -66,7 +66,11 @@ function runCommand(cmd) {
     var outList = [];
     while (size == bufferSize) {
         size = fread(buffer, 1, bufferSize, file);
-        outList.push(buffer.readString().substring(0, size));
+        try {
+            outList.push(buffer.readString().substring(0, size));
+        } catch (e) {
+            //dump("Exception reading line, ignoring characters.\n");
+        }
     }
     pclose(file);
     
