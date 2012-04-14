@@ -89,7 +89,6 @@ self.port.on("change_status", function(val) {
     }
 
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
-    dump(JSON.stringify(gStartedWithFeatures) + "\n");
     document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
@@ -105,6 +104,10 @@ function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
+function sps_adb_pull() {
+    self.port.emit("adbpull", "test");
+}
+document.getElementById("btnAdb").onclick = sps_adb_pull;
 
 function open_settings() {
     self.port.emit("opensettings", "");
