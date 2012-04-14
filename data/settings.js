@@ -71,6 +71,7 @@ function addFeatureDiv(div, name, caption, desc) {
 var featureDescription = {
   "stackwalking" : "Enable stackwalking in <a href='http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-profiling/'>profiling-nightly</a> or custom profiling builds. Custom builds should specify: 'ac_add_options --enable-profiling'",
   "jank" : "Only record samples when the application is not responding. Useful for collecting the source of hangs over a large timespan.",
+  "adb" : "Profile debug version of fennec, this will not work on nightlies. Install 'adb' on your path, and connect a device via usb debugging."
 };
 
 function selectTabSimple(mainAreaDiv) {
@@ -78,12 +79,19 @@ function selectTabSimple(mainAreaDiv) {
   mainAreaDiv.appendChild(featuresDiv);
   featuresDiv.className = "settingHeader";
   featuresDiv.textContent = "Features";
+  rowCount = 0;
 
   var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Stackwalk", featureDescription["stackwalking"], "Mouse over text");
   var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Jank", featureDescription["jank"], "Mouse over text");
 }
 function selectTabAdvanced(mainAreaDiv) {
-  mainAreaDiv.innerHTML = "advanced";
+  var featuresDiv = document.createElement("div");
+  mainAreaDiv.appendChild(featuresDiv);
+  featuresDiv.className = "settingHeader";
+  featuresDiv.textContent = "Advanced Features";
+  rowCount = 0;
+
+  var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Fennec profiling", featureDescription["adb"], "Mouse over text");
 }
 
 document.getElementById('tabSimple').onclick = function() {
