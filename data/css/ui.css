@@ -267,3 +267,14 @@ body {
 label {
   -moz-user-select: none;
 }
+.settingHeader {
+  background: -moz-linear-gradient(rgb(255, 255, 255) 45%, rgb(238, 238, 238) 60%) repeat scroll 0% 0% transparent;
+  font-size: 22px;
+  text-indent: 8px;
+}
+.settingItem {
+  padding: 5px;
+}
+.settingItem.oddRow {
+  background: rgba(230, 230, 230, 0.7);
+}

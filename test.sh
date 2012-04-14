@@ -11,15 +11,15 @@ cd sdk
 cd ..
 
 # Check if a custom build is found first
-if [ -e /Applications/Earlybird.app ]
-then
-  cfx run -a thunderbird --binary /Applications/Earlybird.app
-  exit
-fi
+#if [ -e /Applications/Earlybird.app ]
+#then
+#  cfx run -a thunderbird --binary /Applications/Earlybird.app
+#  exit
+#fi
 
-if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app ]
+if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app ]
 then
-  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
+  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app
   exit
 fi
 
