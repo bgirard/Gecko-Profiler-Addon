@@ -33,13 +33,18 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
-function init() {
+function get_profile_desktop() {
     self.port.emit("getprofile", "test");
     document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 }
 
+function get_profile_adb() {
+    self.port.emit("adbpull", "test");
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
+}
+
 self.port.on("getprofile_progress", function(e) {
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress}), "*");
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress, action: e.action}), "*");
 });
 
 self.port.on("getprofile", function(val) {
@@ -49,4 +54,9 @@ self.port.on("getprofile", function(val) {
       document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
 });
 
-init();
+self.port.on("get_profile_desktop", function(val) {
+    get_profile_desktop();
+});
+self.port.on("get_profile_adb", function(val) {
+    get_profile_adb();
+});
