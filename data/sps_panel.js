@@ -36,12 +36,16 @@
 var gStartedWithFeatures = [];
 var gFeatureList = [];
 var gUpdateInterval = null;
+var gFeaturesPrefs = {};
 
 function has_feature(feature) {
   return gFeatureList.indexOf(feature) !== -1;
 }
 function has_feature_active(feature) {
   return gStartedWithFeatures.indexOf(feature) !== -1;
+}
+function get_feature_pref(feature) {
+      return gFeaturesPrefs[feature] === true;
 }
 
 function sps_toggle_active() {
@@ -64,6 +68,7 @@ self.port.on("onHide", function(val) {
 self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
+    gFeaturesPrefs = val.profilerFeaturesPrefs;
 
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
@@ -84,6 +89,8 @@ self.port.on("change_status", function(val) {
     }
 
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
+    dump(JSON.stringify(gStartedWithFeatures) + "\n");
+    document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
