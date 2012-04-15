@@ -403,7 +403,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 // Crude and buggy approach at getting the file name, fix me
                 var lib = library.name.split("/");
                 lib = lib[lib.length-1];
-                cmd = "/bin/bash -l -c 'arm-eabi-addr2line \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
+                cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"/tmp/" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
                 dump(cmd + "\n");
             }
 
@@ -413,7 +413,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
             var outLines = addr2lineResult.split("\n");
             for (var i = 0; i < unresolvedSymbols.length; i++) {
                 if (i*2+1 < outLines.length) {
-                    resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1];
+                    resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1] + " (in " + library.name + ")";
                 } else {
                     resolvedSymbols[buckets[j][i]] = "Unknown (in " + library.name + ")";
                     //resolvedSymbols[buckets[j][i]] = buckets[j][i] + " (" + unresolvedSymbols[i] + "@" + library.name + ")";
