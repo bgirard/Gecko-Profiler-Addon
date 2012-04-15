@@ -17,7 +17,7 @@ function getWorker() {
 }
 
 var sProfileID = 0;
-function symbolicate(profile, sharedLibraries, progressCallback, finishCallback) {
+function symbolicate(profile, targetPlatform, sharedLibraries, progressCallback, finishCallback) {
   var worker = getWorker();
 
   var id = sProfileID++;
@@ -50,5 +50,5 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
       uri = DEFAULT_SYMBOLICATION_URL;
   }
 
-  worker.postMessage({ id: id, profile: profile, sharedLibraries: sharedLibraries, uri: uri });
+  worker.postMessage({ id: id, profile: profile, targetPlatform: targetPlatform, sharedLibraries: sharedLibraries, uri: uri });
 }

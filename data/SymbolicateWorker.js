@@ -36,18 +36,24 @@ self.onmessage = function (msg) {
 
   var { id, profile, sharedLibraries, uri } = msg.data;
 
-  sharedLibraries = JSON.parse(sharedLibraries);
-  sharedLibraries.sort(function (a, b) { return a.start - b.start; });
+  if (sharedLibraries != null) {
+      sharedLibraries = JSON.parse(sharedLibraries);
+      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
+      // version convert older sharedLibraries formats
+      for (var i = 0; i < sharedLibraries.length; i++) {
+          if (sharedLibraries[i].offset == null) {
+              sharedLibraries[i].offset = 0;
+          }
+      }
+  }
 
-  // version convert older sharedLibraries formats
-  for (var i = 0; i < sharedLibraries.length; i++) {
-    if (sharedLibraries[i].offset == null) {
-      sharedLibraries[i].offset = 0;
-    }
+  var targetPlatform = sPlatform;
+  if (msg.data.targetPlatform != null) {
+      targetPlatform = msg.data.targetPlatform;
   }
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux") {
-    symbolicate(profile, sharedLibraries, sPlatform, function (progress, action) {
+    symbolicate(profile, sharedLibraries, targetPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
       postSymbolicatedProfile(id, profile, result);
@@ -259,6 +265,7 @@ function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallb
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var lines = getSplitLines(subreporters.lineSplitting, profile);
+        sharedLibraries = getSharedLibraries(lines, sharedLibraries);
         var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
@@ -477,4 +484,17 @@ function read_symbols_lib(reporter, library, unresolvedList, platform, resolvedS
     } else if (platform == "Macintosh") {
         readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
     }
+}
+
+function getSharedLibraries(lines, sharedLibraries) {
+    if (sharedLibraries != null) {
+        return sharedLibraries;
+    }
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf("h-") == 0) {
+            var line = lines[i].substring(2);
+            return JSON.stringify(line);
+        }
+    }
+    return null;
 }
