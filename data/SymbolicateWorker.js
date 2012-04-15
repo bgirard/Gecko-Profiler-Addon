@@ -164,7 +164,6 @@ function getContainingLibrary(libs, address) {
 function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
     reporter.begin("Assigning symbols to libraries...");
     var symbolsToResolve = {};
-    dump("libraries: " + JSON.stringify(sharedLibraries) + "\n");
     for (var i = 0; i < addresses.length; i++) {
         var lib = getContainingLibrary(sharedLibraries, parseInt(addresses[i], 16));
         if (!lib)
@@ -172,7 +171,6 @@ function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
         if (!(lib.name in symbolsToResolve)) {
             symbolsToResolve[lib.name] = { library: lib, symbols: [] };
         }
-        dump("Assign " + addresses[i] + " to " + lib.name + "\n");
         symbolsToResolve[lib.name].symbols.push(addresses[i]);
         reporter.setProgress((i + 1) / addresses.length);
     }
@@ -271,7 +269,6 @@ function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallb
         var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
-        dump("Read symbols\n");
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation);
@@ -418,7 +415,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 if (i*2+1 < outLines.length) {
                     resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1];
                 } else {
-                    resolvedSymbols[buckets[j][i]] = "Unknown (" + library.name + ")";
+                    resolvedSymbols[buckets[j][i]] = "Unknown (in " + library.name + ")";
                     //resolvedSymbols[buckets[j][i]] = buckets[j][i] + " (" + unresolvedSymbols[i] + "@" + library.name + ")";
                 }
             }
