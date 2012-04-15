@@ -271,6 +271,7 @@ function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallb
         var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
+        dump("Read symbols\n");
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation);
@@ -398,14 +399,28 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
         for (var j = 0; j < buckets.length; j++) {
             var unresolvedSymbols = relativeToLibrary(library, buckets[j]);
             //dump("addr2line for lib: " + library.name + ", " + unresolvedSymbols.length + "\n");
-            var cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
+            var cmd;
+            if (platform === "Linux") {
+                cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
+            } else if (platform === "Android") {
+                // Crude and buggy approach at getting the file name, fix me
+                var lib = library.name.split("/");
+                lib = lib[lib.length-1];
+                cmd = "/bin/bash -l -c 'arm-eabi-addr2line \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
+                dump(cmd + "\n");
+            }
 
             // Parse
             var addr2lineResult = yield runCommand(cmd, resumeContinuation);
             //dump(addr2lineResult + "\n");
             var outLines = addr2lineResult.split("\n");
             for (var i = 0; i < unresolvedSymbols.length; i++) {
-                resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1];
+                if (i*2+1 < outLines.length) {
+                    resolvedSymbols[buckets[j][i]] = outLines[i*2+0] + " " + outLines[i*2+1];
+                } else {
+                    resolvedSymbols[buckets[j][i]] = "Unknown (" + library.name + ")";
+                    //resolvedSymbols[buckets[j][i]] = buckets[j][i] + " (" + unresolvedSymbols[i] + "@" + library.name + ")";
+                }
             }
             reporter.setProgress((j * kNumSymbolsPerCall + unresolvedSymbols.length) / unresolvedList.length);
         }
@@ -503,4 +518,14 @@ function getSharedLibraries(lines, sharedLibraries) {
         }
     }
     return null;
+}
+
+function hasSymbolResolver(platform, callback) {
+    if (platform === "Android") { 
+        var checkSym = runCommand("/bin/bash -l -c 'arm-eabi-addr2line --version'", resumeContinuation);
+        callback(checkSym.indexOf("GNU addr2line") == 0);
+    } else {
+        // TODO Add proper check for others platform
+        callback(true);
+    }
 }
