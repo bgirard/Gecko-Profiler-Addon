@@ -108,6 +108,10 @@ function sps_adb_pull() {
     self.port.emit("adbpull", "test");
 }
 document.getElementById("btnAdb").onclick = sps_adb_pull;
+function sps_adb_libs() {
+    self.port.emit("adblibs", "test");
+}
+document.getElementById("btnAdbLibs").onclick = sps_adb_libs;
 
 function open_settings() {
     self.port.emit("opensettings", "");
