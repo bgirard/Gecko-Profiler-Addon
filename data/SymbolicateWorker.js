@@ -52,7 +52,7 @@ self.onmessage = function (msg) {
       targetPlatform = msg.data.targetPlatform;
   }
 
-  if (sPlatform == "Macintosh" || sPlatform == "Linux") {
+  if (sPlatform == "Macintosh" || sPlatform == "Linux" || sPlatform == "Android") {
     symbolicate(profile, sharedLibraries, targetPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
@@ -164,6 +164,7 @@ function getContainingLibrary(libs, address) {
 function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
     reporter.begin("Assigning symbols to libraries...");
     var symbolsToResolve = {};
+    dump("libraries: " + JSON.stringify(sharedLibraries) + "\n");
     for (var i = 0; i < addresses.length; i++) {
         var lib = getContainingLibrary(sharedLibraries, parseInt(addresses[i], 16));
         if (!lib)
@@ -171,6 +172,7 @@ function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
         if (!(lib.name in symbolsToResolve)) {
             symbolsToResolve[lib.name] = { library: lib, symbols: [] };
         }
+        dump("Assign " + addresses[i] + " to " + lib.name + "\n");
         symbolsToResolve[lib.name].symbols.push(addresses[i]);
         reporter.setProgress((i + 1) / addresses.length);
     }
@@ -481,8 +483,12 @@ function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSym
 function read_symbols_lib(reporter, library, unresolvedList, platform, resolvedSymbols, callback) {
     if (platform == "Linux") {
         readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
+    } else if (platform == "Android") {
+        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
     } else if (platform == "Macintosh") {
         readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
+    } else {
+        throw "Unsupported platform: " + platform;
     }
 }
 
@@ -493,7 +499,7 @@ function getSharedLibraries(lines, sharedLibraries) {
     for (var i = 0; i < lines.length; i++) {
         if (lines[i].indexOf("h-") == 0) {
             var line = lines[i].substring(2);
-            return JSON.stringify(line);
+            return JSON.parse(line);
         }
     }
     return null;
