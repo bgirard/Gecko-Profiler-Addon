@@ -17,6 +17,12 @@ cd ..
 #  exit
 #fi
 
+if [ -e ./firefox/firefox ]
+then
+  cfx run --binary ./firefox/firefox
+  exit
+fi
+
 if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app ]
 then
   cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app

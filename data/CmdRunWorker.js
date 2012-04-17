@@ -4,7 +4,7 @@ var inited = false;
 
 function init(platform) {
     var lib;
-    if (platform == "Linux") {
+    if (platform == "X11" || platform == "Linux") {
         var libcLoc = "/lib/x86_64-linux-gnu/libc.so.6";
         try {
             lib = ctypes.open(libcLoc); 
@@ -18,7 +18,7 @@ function init(platform) {
         return;
     } else {
         dump("Unknown plat\n");
-        throw "Unknown platform";
+        throw "Unknown platform: " + platform;
     }
     
     popen = lib.declare("popen",  
