@@ -5,13 +5,19 @@ var inited = false;
 function init(platform) {
     var lib;
     if (platform == "X11" || platform == "Linux") {
-        var libcLoc = "/lib/x86_64-linux-gnu/libc.so.6";
-        try {
-            lib = ctypes.open(libcLoc); 
-        } catch(err) {
-            dump("Could not open libc at '" + libcLoc + "'\n");
-            throw "Could not open libc at '" + libcLoc + "'";
-        }
+        // https://developer.mozilla.org/en/js-ctypes/Using_js-ctypes#Calling_LibC_routines_on_Linux.2FPOSIX
+        try {  
+            /* Linux */  
+            lib = ctypes.open("libc.so.6");  
+        } catch (e) {  
+            /* Most other Unixes */  
+            try {
+                lib = ctypes.open("libc.so");  
+            } catch(err) {
+                dump("Could not open libc at 'libc.so.6 or libc.so'\n");
+                throw "Could not open libc at 'libc.so.6 or ibc.so'";
+            }
+        }  
     } else if (platform == "Macintosh"){
         lib = ctypes.open("/usr/lib/libc.dylib"); 
     } else if (platform == "Windows") {
