@@ -215,6 +215,7 @@ function shouldDropFrame(symbolName) {
 }
 
 function getSplitLines(reporter, profile) {
+    dump("Splitting profile into lines...\n");
     reporter.begin("Splitting profile into lines...");
     var split = profile.split("\n");
     reporter.finish();
