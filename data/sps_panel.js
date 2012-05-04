@@ -79,6 +79,9 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var btnSave = document.getElementById("btnSave");
+    btnSave.disabled = !val.isActive;
+
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
