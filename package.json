@@ -3,14 +3,14 @@
     "license": "MPL2", 
     "author": "Benoit Girard <bgirard@mozilla.com>", 
     "url": "https://github.com/bgirard/Gecko-Profiler-Addon", 
-    "version": "1.4.15",
+    "version": "1.4.16",
     "dependencies": [
       "addon-kit",
       "api-utils",
       "vold-utils",
       "xulkeys"
     ], 
-    "preferences": [{
+    "comment_preferences": [{
         "name": "somePreference",
         "title": "Some preference title",
         "type": "string",
