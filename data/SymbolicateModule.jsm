@@ -3,7 +3,8 @@ var EXPORTED_SYMBOLS = ["symbolicate"];
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-const DEFAULT_SYMBOLICATION_URL = "http://127.0.0.1:8000";
+// Change this in main as well where we default init the pref
+const DEFAULT_SYMBOLICATION_URL = "http://symbolapi.mozilla.org/";
 
 var sWorker = null;
 function getWorker() {
