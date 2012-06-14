@@ -10,3 +10,4 @@ cd sdk
 . ./bin/activate
 cd ..
 cfx xpi --update-link https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler.xpi --update-url https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler.update.rdf
+sh thunderbird_repack.sh
