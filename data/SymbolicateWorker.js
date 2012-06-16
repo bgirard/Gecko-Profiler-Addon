@@ -19,7 +19,7 @@ function init(platform, abi) {
         platform = "Linux";
     }
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
-    sCmdWorker.init(platform);
+    sCmdWorker.postMessage({type: "platform", cmd: platform});
     sPlatform = platform;
     sAbi = abi;
 }
@@ -28,9 +28,9 @@ var inited = false;
 
 self.onmessage = function (msg) {
   if (!inited) {
-    inited = true;
     var { platform, abi } = msg.data;
     init(platform, abi);
+    inited = true;
     return;
   }
 
@@ -63,6 +63,7 @@ self.onmessage = function (msg) {
       postSymbolicatedProfile(id, profile, result);
     });
   } else {
+    dump("Don't know how to symbolicate for platform: '" + sPlatform + "'\n");
     postSymbolicatedProfile(id, profile, {});
   }
 }
@@ -102,7 +103,7 @@ function runCommand(cmd, callback) {
       callback(msg.data.result);
     }
   });
-  worker.postMessage(cmd);
+  worker.postMessage({type: "runCommand", cmd: cmd});
 }
 
 // Compute a map of libraries to resolve
