@@ -23,7 +23,7 @@ function init(platform) {
     } else if (platform == "Windows") {
         return;
     } else {
-        dump("Unknown plat\n");
+        dump("Unknown platform '"  + platform + "'\n");
         throw "Unknown platform: " + platform;
     }
     
@@ -53,15 +53,28 @@ function init(platform) {
 
 self.onmessage = function (msg) {
   if (!inited) {
-    init(msg.data);
+    init(msg.data.cmd);
     return;
   }
 
-  var cmd = msg.data;
-  var result = runCommand(cmd);
-  self.postMessage({ cmd: cmd, result: result });
+  var cmd = msg.data.cmd;
+  if (msg.data.type === "runCommand") {
+    var result = runCommand(cmd);
+    self.postMessage({ cmd: cmd, result: result });
+  } else if (msg.data.type === "platform") {
+    // do nothing
+  } else if (msg.data.type === "exec") {
+    exec(cmd);
+  } else {
+    dump("Bad message type\n");
+  }
 }
 
+function exec(cmd) {
+    var file = popen(cmd, "r")
+    pclose(file);
+    return "";
+}
 
 function runCommand(cmd) {
     var file = popen(cmd, "r")

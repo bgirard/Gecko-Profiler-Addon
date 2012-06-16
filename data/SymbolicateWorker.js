@@ -19,7 +19,7 @@ function init(platform, abi) {
         platform = "Linux";
     }
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
-    sCmdWorker.postMessage(platform);
+    sCmdWorker.init(platform);
     sPlatform = platform;
     sAbi = abi;
 }
