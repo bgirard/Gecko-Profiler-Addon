@@ -138,7 +138,8 @@ function findSymbolsToResolveJSON(reporter, profile) {
                 continue;
             for (var k = 0; k < sample.frames.length; k++) {
                 var frame = sample.frames[k];
-                addresses[frame.location] = null;
+                if (frame.location.indexOf("l-0x") == 0)
+                  addresses[frame.location] = null;
             }
         }
     }
@@ -480,7 +481,7 @@ function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSym
                 var unresolvedSymbols = buckets[j];
 
                 var cmd = "/usr/bin/atos" + atos_args + " -l 0x" + library.start.toString(16) + " -o '" +
-                strippedLibraryPath + "' " + unresolvedSymbols.join(" ");
+                  strippedLibraryPath + "' " + unresolvedSymbols.join(" ");
 
                 // Parse
                 var atosResult = yield runCommand(cmd, resumeContinuation);
