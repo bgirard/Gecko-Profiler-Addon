@@ -138,7 +138,7 @@ function findSymbolsToResolveJSON(reporter, profile) {
                 continue;
             for (var k = 0; k < sample.frames.length; k++) {
                 var frame = sample.frames[k];
-                if (frame.location.indexOf("l-0x") == 0)
+                if (frame.location.indexOf("0x") == 0)
                   addresses[frame.location] = null;
             }
         }
