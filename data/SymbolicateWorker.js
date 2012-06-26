@@ -1,3 +1,5 @@
+/* -*- Mode: js2; indent-tabs-mode: nil; -*- */
+
 importScripts("ProgressReporter.js");
 
 var dropFrames =
@@ -13,8 +15,10 @@ var dropFrames =
 var sCmdWorker = null;
 var sPlatform = "";
 var sAbi = "";
+var sAndroidLibsPrefix = "/tmp";
+var sFennecLibsPrefix = "/tmp";
 
-function init(platform, abi) {
+function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
     if (platform == "X11") {
         platform = "Linux";
     }
@@ -22,19 +26,21 @@ function init(platform, abi) {
     sCmdWorker.postMessage({type: "platform", cmd: platform});
     sPlatform = platform;
     sAbi = abi;
+    sAndroidLibsPrefix = androidLibsPrefix;
+    sFennecLibsPrefix = fennecLibsPrefix;
 }
 
 var inited = false;
 
 self.onmessage = function (msg) {
   if (!inited) {
-    var { platform, abi } = msg.data;
-    init(platform, abi);
+    var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
+    init(platform, abi, androidLibsPrefix, fennecLibsPrefix);
     inited = true;
     return;
   }
 
-  var { id, profile, sharedLibraries, uri } = msg.data;
+  var { id, profile, sharedLibraries, uri, androidHWID } = msg.data;
 
   if (sharedLibraries != null) {
       sharedLibraries = JSON.parse(sharedLibraries);
@@ -57,11 +63,11 @@ self.onmessage = function (msg) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
     }, function (result) {
       postSymbolicatedProfile(id, profile, result);
-    });    
+    }, androidHWID);
   } else if (sPlatform == "Windows") {
     symbolicateWindows(profile, sharedLibraries, uri, function (result) {
       postSymbolicatedProfile(id, profile, result);
-    });
+    }, androidHWID);
   } else {
     dump("Don't know how to symbolicate for platform: '" + sPlatform + "'\n");
     postSymbolicatedProfile(id, profile, {});
@@ -192,7 +198,7 @@ function runAsContinuation(fun) {
 const kExpectedSymbolsProcessedPerMs = 0.99;
 const kSymbolicationWarmupTime = 15; // ms
 
-function resolveSymbols(reporter, symbolsToResolve, platform, callback) {
+function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
     reporter.begin("Resolving symbols...");
     var libReporters = {};
     for (var lib in symbolsToResolve) {
@@ -204,7 +210,7 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback) {
         for (var lib in symbolsToResolve) {
             yield read_symbols_lib(libReporters[lib], symbolsToResolve[lib].library,
                                    symbolsToResolve[lib].symbols, platform, resolvedSymbols,
-                                   resumeContinuation);
+                                   resumeContinuation, hwid);
         }
         setTimeout(function () {
             callback(resolvedSymbols);
@@ -224,15 +230,15 @@ function getSplitLines(reporter, profile) {
     return split;
 }
 
-function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
     if (typeof profile === "string") {
-      return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
+      return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
     } else {
-      return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback);
+      return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
     }
 }
 
-function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
     runAsContinuation(function (resumeContinuation) {
         var totalProgressReporter = new ProgressReporter();
         var subreporters = totalProgressReporter.addSubreporters({
@@ -249,12 +255,12 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
                                                         sharedLibraries, foundSymbols);
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
-                                                   resumeContinuation);
+                                                   resumeContinuation, hwid);
         finishCallback(resolvedSymbols);
     });
 }
 
-function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback) {
+function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
     runAsContinuation(function (resumeContinuation) {
         var totalProgressReporter = new ProgressReporter();
         var subreporters = totalProgressReporter.addSubreporters({
@@ -274,7 +280,7 @@ function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallb
                                                         sharedLibraries, foundSymbols);
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
-                                                   resumeContinuation);
+                                                   resumeContinuation, hwid);
         finishCallback(resolvedSymbols);
     });
 }
@@ -392,8 +398,9 @@ function relativeToLibrary(library, symbols) {
     });
 }
 
-function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback) {
+function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback, androidHWID) {
     reporter.begin("Resolving symbols for library " + library.name + "...");
+
     runAsContinuation(function (resumeContinuation) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
         for (var j = 0; j < buckets.length; j++) {
@@ -403,10 +410,20 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
             if (platform === "Linux") {
                 cmd = "/usr/bin/addr2line -C -f -e '" + library.name + "' " + unresolvedSymbols.join(" ");
             } else if (platform === "Android") {
-                // Crude and buggy approach at getting the file name, fix me
-                var lib = library.name.split("/");
-                lib = lib[lib.length-1];
-                cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"/tmp/" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
+                // XXX we really want to use file.join here; and do something smarter for the fennec libs,
+                // but instead just make it work on unixen for now
+                var lib;
+
+                if (library.name.indexOf("/dev/ashmem/") == 0) {
+                    // this is likely a fennec library; we pulled it just into sFennecLibsPrefix
+                    var libBaseName = library.name.split("/");
+                    libBaseName = libBaseName[libBaseName.length - 1];
+                    lib = sFennecLibsPrefix + "/" + libBaseName;
+                } else {
+                    lib = sAndroidLibsPrefix + "/" + androidHWID + library.name; // (library.name will have a leading "/")
+                }
+
+                cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
                 dump(cmd + "\n");
             }
 
@@ -499,13 +516,13 @@ function readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSym
     });
 }
 
-function read_symbols_lib(reporter, library, unresolvedList, platform, resolvedSymbols, callback) {
+function read_symbols_lib(reporter, library, unresolvedList, platform, resolvedSymbols, callback, hwid) {
     if (platform == "Linux") {
-        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
+        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback, hwid);
     } else if (platform == "Android") {
-        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
+        readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback, hwid);
     } else if (platform == "Macintosh") {
-        readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback);
+        readSymbolsMac(reporter, platform, library, unresolvedList, resolvedSymbols, callback, hwid);
     } else {
         throw "Unsupported platform: " + platform;
     }
