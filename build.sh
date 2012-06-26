@@ -1,8 +1,6 @@
 #!/bin/bash
 if [ ! -d "sdk" ]; then
-  echo "Must download the sdk first:"
-  echo "git clone https://github.com/mozilla/addon-sdk sdk"
-  echo "cd sdk && git checkout 1.7 && cd .."
+  echo "Must download the sdk first. See the INSTALLING for more info"
   exit
 fi
 
