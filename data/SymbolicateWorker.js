@@ -114,11 +114,13 @@ function runCommand(cmd, callback) {
 
 // Compute a map of libraries to resolve
 function findSymbolsToResolve(reporter, lines) {
-    reporter.begin("Gathering unresolved symbols...")
+    reporter.begin("Gathering unresolved symbols...");
     var addresses = {};
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        if (line.indexOf("l-0x") == 0) {
+        if (line.indexOf("l-0x") == 0 ||
+            line.indexOf("L-0x") == 0)
+        {
             var address = line.substring(2);
             addresses[address] = null;
         }
@@ -129,7 +131,7 @@ function findSymbolsToResolve(reporter, lines) {
 }
 
 function findSymbolsToResolveJSON(reporter, profile) {
-    reporter.begin("Gathering unresolved symbols...")
+    reporter.begin("Gathering unresolved symbols...");
     var addresses = {};
     if (!profile.threads) {
       return Object.keys(addresses);
