@@ -91,6 +91,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkJS = document.getElementById("chkJS");
+    if (chkJS) {
+      chkJS.disabled = !has_feature("js") || val.isActive;
+      chkJS.checked = has_feature_active("js");
+      chkJS.onclick = function() {
+        self.port.emit("set_feature", {feature: "js", value: chkJS.checked});
+      }
+    }
+
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
