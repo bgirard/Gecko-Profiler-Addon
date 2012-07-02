@@ -80,7 +80,7 @@ self.port.on("change_status", function(val) {
     }
 
     var btnSave = document.getElementById("btnSave");
-    btnSave.disabled = !val.isActive;
+    btnSave.disabled = !val.isActive && !has_feature_active("copyProfileOnStop");
 
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
