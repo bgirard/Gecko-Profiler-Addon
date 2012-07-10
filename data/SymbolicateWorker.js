@@ -295,8 +295,14 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
     });
 
     totalProgressReporter.begin("Symbolicating profile...");
-    var lines = getSplitLines(subreporters.lineSplitting, profile);
-    var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
+
+    if (typeof profile === "string") {
+      var lines = getSplitLines(subreporters.lineSplitting, profile);
+      var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
+    } else {
+      var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+    }
+
     stackAddresses.sort();
 
     // Drop memory modules not referenced by the stack
