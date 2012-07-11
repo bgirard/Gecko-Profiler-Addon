@@ -29,10 +29,10 @@ then
   exit
 fi
 
-if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app ]
+if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app ]
 then
   echo "64 gdb"
-  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/NightlyDebug.app
+  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
   exit
 fi
 
