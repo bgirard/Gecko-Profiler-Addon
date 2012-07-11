@@ -58,6 +58,17 @@ self.onmessage = function (msg) {
       targetPlatform = msg.data.targetPlatform;
   }
 
+  if (typeof profile === "string" && profile.charAt(0) === "{") {
+    dump("Text profile starting with '{', parsing as JSON (" + profile.length + " bytes)\n");
+    profile = JSON.parse(profile);
+    dump("Parsed\n");
+
+    if (!sharedLibraries && profile.libs) {
+      sharedLibraries = JSON.parse(profile.libs);
+      dump("Extract shared library from profile\n");
+    }
+  }
+
   if (sPlatform == "Macintosh" || sPlatform == "Linux" || sPlatform == "Android") {
     symbolicate(profile, sharedLibraries, targetPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
