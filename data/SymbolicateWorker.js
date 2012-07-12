@@ -5,6 +5,8 @@ importScripts("ProgressReporter.js");
 var dropFrames =
   [ "TableTicker::Tick",
     "ProfilerSignalHandler",
+    "js::RunScript(JSContext*, JSScript*, js::StackFrame*)",
+    "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__",
     "_ZL21ProfilerSignalHandler",
     "0x00000001",
     "_sigtramp",
