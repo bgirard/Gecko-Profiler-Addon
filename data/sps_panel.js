@@ -116,6 +116,10 @@ function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
+function sps_adb_start() {
+    self.port.emit("adbstart", "test");
+}
+document.getElementById("btnStart").onclick = sps_adb_start;
 function sps_adb_pull() {
     self.port.emit("adbpull", "test");
 }
