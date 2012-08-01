@@ -320,27 +320,19 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     // Drop memory modules not referenced by the stack
     var memoryMap = [];
-    var pcIndex = 0;
-    var libIndex = 0;
-    var addedLib = false;
-    while (pcIndex < stackAddresses.length && libIndex < sharedLibraries.length) {
-        var pc = parseInt(stackAddresses[pcIndex], 16);
+    for (var libIndex = 0; libIndex < sharedLibraries.length; ++libIndex) {
         var lib = sharedLibraries[libIndex];
-        if (lib.start <= pc && pc < lib.end) {
-            if (!addedLib) {
+	for (var pcIndex = 0; pcIndex < stackAddresses.length; ++pcIndex) {
+	    var pc = parseInt(stackAddresses[pcIndex], 16);
+	    if (lib.start <= pc && pc < lib.end) {
                 var libSize = lib.end - lib.start;
                 var module = [lib.start, lib.name, libSize, lib.pdbAge, lib.pdbSignature, lib.pdbName];
                 memoryMap.push(module);
-                addedLib = true;
+
+		// We found a PC entry for this library, so no need to look at more PCs
+		break;
             }
-            ++pcIndex;
-        } else if (pc >= lib.end) {
-            ++libIndex;
-            addedLib = false;
-        } else {
-            // PC does not belong to any module
-            ++pcIndex;
-        }
+	}
     }
 
     symbolicationRequest = [{ "stack": stackAddresses, "memoryMap": memoryMap }];
