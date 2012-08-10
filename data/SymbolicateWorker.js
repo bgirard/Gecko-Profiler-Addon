@@ -125,6 +125,33 @@ function runCommand(cmd, callback) {
   worker.postMessage({type: "runCommand", cmd: cmd});
 }
 
+function getJSScriptURL(fullName) {
+  var isJSFrame = false;
+  var url = null;
+  var match =
+    /^(.*) \(in ([^\)]*)\) (\+ [0-9]+)$/.exec(fullName) ||
+    /^(.*) \(in ([^\)]*)\) (\(.*:.*\))$/.exec(fullName) ||
+    /^(.*) \(in ([^\)]*)\)$/.exec(fullName);
+    // Try to parse a JS frame
+  var jsMatch1 = match ||
+    /^(.*) \((.*):([0-9]+)\)$/.exec(fullName);
+  if (!match && jsMatch1) {
+    url = jsMatch1[2];
+    isJSFrame = true;
+  }
+  var jsMatch2 = match ||
+    /^(.*):([0-9]+)$/.exec(fullName);
+  if (!match && jsMatch2) {
+    url = jsMatch2[1];
+    isJSFrame = true;
+  }
+  if (url) {
+    var urlTokens = url.split(" ");
+    url = urlTokens[urlTokens.length-1];
+  }
+  return url;
+}
+
 // Compute a map of libraries to resolve
 function findSymbolsToResolve(reporter, lines) {
     reporter.begin("Gathering unresolved symbols...");
@@ -159,14 +186,69 @@ function findSymbolsToResolveJSON(reporter, profile) {
                 continue;
             for (var k = 0; k < sample.frames.length; k++) {
                 var frame = sample.frames[k];
-                if (frame.location.indexOf("0x") == 0)
+                if (frame.location.indexOf("0x") == 0) {
                   addresses[frame.location] = null;
+                }
             }
         }
     }
 
     reporter.finish();
     return Object.keys(addresses);
+}
+
+function resolveJSDocumentsJSON(reporter, profile) {
+    // TODO pass in a proper progress reporter
+    //reporter.begin("Gathering js source...");
+    var addresses = {};
+    if (!profile.threads) {
+      return;
+    }
+    for (var i = 0; i < profile.threads.length; i++) {
+        var thread = profile.threads[i];
+        if (!thread.samples)
+            continue;
+        for (var j = 0; j < thread.samples.length; j++) {
+            var sample = thread.samples[j];
+            if (!sample.frames)
+                continue;
+            for (var k = 0; k < sample.frames.length; k++) {
+                // Try to get a JS url if this is a JS frame. If
+                // so we will retrieve for the document
+                // for the front end to expend the source view.
+                var frame = sample.frames[k];
+                var url = getJSScriptURL(frame.location);
+                if (url) {
+                    addresses[url] = null;
+                }
+            }
+        }
+    }
+
+    profile.meta.js = profile.meta.js || {};
+    profile.meta.js.source = profile.meta.js.source || {};
+
+    dump("Fetching js source\n");
+    var documentsToFetch = Object.keys(addresses);
+    for (var i = 0; i < documentsToFetch.length; i++) {
+        var documentToFetch = documentsToFetch[i];
+        dump("Fetch: " + documentToFetch + "\n");
+        try {
+            var uri = documentToFetch;
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", uri, false);
+            xhr.send(null);
+            var scriptStr = xhr.responseText;
+            profile.meta.js.source[uri] = scriptStr;
+            dump("source:\n" + scriptStr);
+        } catch (e) {
+            dump("Fetch js source request failed: " + e + " (" + uri + ")\n");
+            continue;
+        }
+    }
+
+    //reporter.finish();
+    return;
 }
 
 function getContainingLibrary(libs, address) {
@@ -266,6 +348,7 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+        resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
@@ -314,6 +397,7 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
       var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
     } else {
       var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+      resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
     }
 
     stackAddresses.sort();
