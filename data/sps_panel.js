@@ -116,6 +116,11 @@ function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
+function sps_import() {
+    dump("call\n");
+    self.port.emit("importpackage", "/tmp/eideticker_profile.zip");   
+}
+document.getElementById("btnPackage").onclick = sps_import;
 function sps_adb_start() {
     self.port.emit("adbstart", "test");
 }

@@ -497,6 +497,7 @@ function relativeToLibrary(library, symbols) {
 
 function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback, androidHWID) {
     reporter.begin("Resolving symbols for library " + library.name + "...");
+    dump("Resolving symbols for library " + library.name + "\n");
 
     runAsContinuation(function (resumeContinuation) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
@@ -517,7 +518,13 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     libBaseName = libBaseName[libBaseName.length - 1];
                     lib = sFennecLibsPrefix + "/" + libBaseName;
                 } else {
-                    lib = sAndroidLibsPrefix + "/" + androidHWID + library.name; // (library.name will have a leading "/")
+                    if (!androidHWID) {
+                        // If we don't have a HWID assume all the so are in the tmp root
+                        var libBaseName = library.name.split("/");
+                        lib = "/tmp/" + libBaseName[libBaseName.length - 1];
+                    } else {
+                        lib = sAndroidLibsPrefix + "/" + androidHWID + library.name; // (library.name will have a leading "/")
+                    }
                 }
 
                 cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";

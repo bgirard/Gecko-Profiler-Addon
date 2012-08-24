@@ -53,6 +53,11 @@ function get_profile_libs() {
     document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 }
 
+function get_profile_importpackage(fileName) {
+    self.port.emit("importpackage", fileName);
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
+}
+
 self.port.on("getprofile_progress", function(e) {
     document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress, action: e.action}), "*");
 });
@@ -75,4 +80,7 @@ self.port.on("get_profile_start", function(val) {
 });
 self.port.on("get_profile_libs", function(val) {
     get_profile_libs();
+});
+self.port.on("get_profile_importpackage", function(fileName) {
+    get_profile_importpackage(fileName);
 });
