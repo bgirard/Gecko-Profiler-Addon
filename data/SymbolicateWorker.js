@@ -20,13 +20,13 @@ var sAbi = "";
 var sAndroidLibsPrefix = "/tmp";
 var sFennecLibsPrefix = "/tmp";
 
-function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
+function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
     if (platform == "X11") {
         platform = "Linux";
     }
+    sPlatform = platform;
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
     sCmdWorker.postMessage({type: "platform", cmd: platform});
-    sPlatform = platform;
     sAbi = abi;
     sAndroidLibsPrefix = androidLibsPrefix;
     sFennecLibsPrefix = fennecLibsPrefix;
@@ -34,10 +34,16 @@ function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
 
 var inited = false;
 
-self.onmessage = function (msg) {
+var symbolicate_onmessage = function (msg) {
   if (!inited) {
     var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
-    init(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    try {
+      init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    } catch (e) {
+      dump("platform: " + platform + "\n");
+      // If this doesn't work then fall back to call commands directly
+      init(platform);      
+    }
     inited = true;
     return;
   }
@@ -87,6 +93,8 @@ self.onmessage = function (msg) {
   }
 }
 
+self.onmessage = symbolicate_onmessage;
+
 function postSymbolicatedProfile(id, profile, symbolicationTable) {
     var errorString = null;
     if ("error" in symbolicationTable) {
@@ -116,6 +124,13 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
 function runCommand(cmd, callback) {
   var worker = sCmdWorker;
+  if (worker == null) {
+    setTimeout(function() {
+      var result = runCommandWorker(cmd);
+      callback(result);
+    }, 0);
+    return;
+  }
   worker.addEventListener("message", function workerSentMessage(msg) {
     if (msg.data.cmd == cmd) {
       worker.removeEventListener("message", workerSentMessage);
@@ -309,9 +324,12 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
                                    symbolsToResolve[lib].symbols, platform, resolvedSymbols,
                                    resumeContinuation, hwid);
         }
-        setTimeout(function () {
-            callback(resolvedSymbols);
-        }, 0);
+
+
+
+            setTimeout(function () {
+                callback(resolvedSymbols);
+            }, 0);
     });
 }
 
@@ -351,6 +369,7 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
+        dump("Resolve symbol\n");
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation, hwid);

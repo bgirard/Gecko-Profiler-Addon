@@ -59,7 +59,7 @@ self.onmessage = function (msg) {
 
   var cmd = msg.data.cmd;
   if (msg.data.type === "runCommand") {
-    var result = runCommand(cmd);
+    var result = runCommandWorker(cmd);
     self.postMessage({ cmd: cmd, result: result });
   } else if (msg.data.type === "platform") {
     // do nothing
@@ -76,7 +76,7 @@ function exec(cmd) {
     return "";
 }
 
-function runCommand(cmd) {
+function runCommandWorker(cmd) {
     var file = popen(cmd, "r")
     
     const bufferSize = 1000;
