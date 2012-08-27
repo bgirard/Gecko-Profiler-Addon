@@ -124,6 +124,13 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
 function runCommand(cmd, callback) {
   var worker = sCmdWorker;
+  if (worker == null) {
+    setTimeout(function() {
+      var result = runCommandWorker(cmd);
+      callback(result);
+    }, 0);
+    return;
+  }
   worker.addEventListener("message", function workerSentMessage(msg) {
     if (msg.data.cmd == cmd) {
       worker.removeEventListener("message", workerSentMessage);

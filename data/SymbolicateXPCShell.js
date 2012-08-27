@@ -65,9 +65,13 @@ function setTimeout(func, time)  {
   new _Timer(func, Number(time));
 }
 
+var sIsDone = false;
 self.postMessage = function (msg) {
-  if (msg.type == "Progress") {
+  if (msg.type == "progress") {
     dump("progress\n");
+  } else if (msg.type == "finished") {
+    dump("finished\n");
+    sIsDone = true;
   } else {
     dump("Message type: " + msg.type + "\n");
   }
@@ -99,7 +103,7 @@ function symbolicate_file(fileName) {
         .getService(Ci.nsIThreadManager);
     var mainThread = gThreadManager.currentThread;
 
-    while (true)
+    while (!sIsDone)
         mainThread.processNextEvent(true);
 
 }
