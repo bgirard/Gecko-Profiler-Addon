@@ -20,7 +20,7 @@ var sAbi = "";
 var sAndroidLibsPrefix = "/tmp";
 var sFennecLibsPrefix = "/tmp";
 
-function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
+function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
     if (platform == "X11") {
         platform = "Linux";
     }
@@ -37,7 +37,13 @@ var inited = false;
 self.onmessage = function (msg) {
   if (!inited) {
     var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
-    init(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    try {
+      init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    } catch (e) {
+      dump("platform: " + platform + "\n");
+      // If this doesn't work then fall back to call commands directly
+      init(platform);      
+    }
     inited = true;
     return;
   }
