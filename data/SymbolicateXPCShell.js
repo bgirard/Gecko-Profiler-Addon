@@ -38,7 +38,6 @@ _Timer.prototype = {
 
   notify: function(timer) {
     _pendingTimers.splice(_pendingTimers.indexOf(timer), 1);
-    dump("fired\n");
 
     // The current nsITimer implementation can undershoot, but even if it
     // couldn't, paranoia is probably a virtue here given the potential for
@@ -71,7 +70,7 @@ self.postMessage = function (msg) {
     dump("progress\n");
   } else if (msg.type == "finished") {
     dump("finished\n");
-    dump("profile: " + msg.profile + "\n");
+    dump(msg.profile + "\n");
     sIsDone = true;
   } else {
     dump("Message type: " + msg.type + "\n");
