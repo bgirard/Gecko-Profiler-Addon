@@ -317,9 +317,12 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
                                    symbolsToResolve[lib].symbols, platform, resolvedSymbols,
                                    resumeContinuation, hwid);
         }
-        setTimeout(function () {
-            callback(resolvedSymbols);
-        }, 0);
+
+
+
+            setTimeout(function () {
+                callback(resolvedSymbols);
+            }, 0);
     });
 }
 
@@ -359,6 +362,7 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
+        dump("Resolve symbol\n");
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation, hwid);
