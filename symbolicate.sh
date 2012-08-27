@@ -18,9 +18,10 @@ ls firefox/mochitest > /dev/null || {
   unzip firefox-17.0a1.en-US.linux-i686.tests.zip -d firefox
 } 
 
+cp data/ProgressReporter.js firefox
 cp data/SymbolicateXPCShell.js firefox
 cp data/SymbolicateWorker.js firefox
 cp data/SymbolicateMain.js firefox
 cp data/CmdRunWorker.js firefox
 cd firefox
-./run-mozilla.sh bin/xpcshell -g . -a . -f SymbolicateXPCShell.js -f CmdRunWorker.js -f SymbolicateWorker.js SymbolicateMain.js test-arg
+./run-mozilla.sh bin/xpcshell -g . -a . -f ProgressReporter.js -f SymbolicateXPCShell.js -f CmdRunWorker.js -f SymbolicateWorker.js SymbolicateMain.js test-arg

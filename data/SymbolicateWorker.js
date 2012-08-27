@@ -24,9 +24,9 @@ function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) 
     if (platform == "X11") {
         platform = "Linux";
     }
+    sPlatform = platform;
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
     sCmdWorker.postMessage({type: "platform", cmd: platform});
-    sPlatform = platform;
     sAbi = abi;
     sAndroidLibsPrefix = androidLibsPrefix;
     sFennecLibsPrefix = fennecLibsPrefix;
@@ -34,7 +34,7 @@ function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) 
 
 var inited = false;
 
-self.onmessage = function (msg) {
+var symbolicate_onmessage = function (msg) {
   if (!inited) {
     var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
     try {
@@ -92,6 +92,8 @@ self.onmessage = function (msg) {
     postSymbolicatedProfile(id, profile, {});
   }
 }
+
+self.onmessage = symbolicate_onmessage;
 
 function postSymbolicatedProfile(id, profile, symbolicationTable) {
     var errorString = null;
