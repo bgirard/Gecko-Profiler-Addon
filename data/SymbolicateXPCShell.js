@@ -71,6 +71,7 @@ self.postMessage = function (msg) {
     dump("progress\n");
   } else if (msg.type == "finished") {
     dump("finished\n");
+    dump("profile: " + msg.profile + "\n");
     sIsDone = true;
   } else {
     dump("Message type: " + msg.type + "\n");
