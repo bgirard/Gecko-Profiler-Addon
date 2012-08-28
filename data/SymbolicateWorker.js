@@ -329,12 +329,9 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
                                    symbolsToResolve[lib].symbols, platform, resolvedSymbols,
                                    resumeContinuation, hwid);
         }
-
-
-
-            setTimeout(function () {
-                callback(resolvedSymbols);
-            }, 0);
+        setTimeout(function () {
+            callback(resolvedSymbols);
+        }, 0);
     });
 }
 
