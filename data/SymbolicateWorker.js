@@ -52,13 +52,6 @@ var symbolicate_onmessage = function (msg) {
 
   if (sharedLibraries != null) {
       sharedLibraries = JSON.parse(sharedLibraries);
-      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
-      // version convert older sharedLibraries formats
-      for (var i = 0; i < sharedLibraries.length; i++) {
-          if (sharedLibraries[i].offset == null) {
-              sharedLibraries[i].offset = 0;
-          }
-      }
   }
 
   var targetPlatform = sPlatform;
@@ -75,6 +68,16 @@ var symbolicate_onmessage = function (msg) {
       sharedLibraries = JSON.parse(profile.libs);
       dump("Extract shared library from profile\n");
     }
+  }
+
+  if (sharedLibraries != null) {
+      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
+      // version convert older sharedLibraries formats
+      for (var i = 0; i < sharedLibraries.length; i++) {
+          if (sharedLibraries[i].offset == null) {
+              sharedLibraries[i].offset = 0;
+          }
+      }
   }
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux" || sPlatform == "Android") {
@@ -255,7 +258,7 @@ function resolveJSDocumentsJSON(reporter, profile) {
             xhr.send(null);
             var scriptStr = xhr.responseText;
             profile.meta.js.source[uri] = scriptStr;
-            dump("source:\n" + scriptStr);
+            //dump("source:\n" + scriptStr);
         } catch (e) {
             dump("Fetch js source request failed: " + e + " (" + uri + ")\n");
             continue;
@@ -286,8 +289,10 @@ function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
     var symbolsToResolve = {};
     for (var i = 0; i < addresses.length; i++) {
         var lib = getContainingLibrary(sharedLibraries, parseInt(addresses[i], 16));
-        if (!lib)
+        if (!lib) {
+            //dump("Cant find lib for address: " + addresses[i] + "\n");
             continue;
+        }
         if (!(lib.name in symbolsToResolve)) {
             symbolsToResolve[lib.name] = { library: lib, symbols: [] };
         }
@@ -537,12 +542,15 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     libBaseName = libBaseName[libBaseName.length - 1];
                     lib = sFennecLibsPrefix + "/" + libBaseName;
                 } else {
+                    var libBaseName = library.name.split("/");
+                    libBaseName = libBaseName[libBaseName.length - 1];
+                    if (libBaseName[0] == "!")
+                        libBaseName = libBaseName.substring(1);
                     if (!androidHWID) {
                         // If we don't have a HWID assume all the so are in the tmp root
-                        var libBaseName = library.name.split("/");
-                        lib = "/tmp/" + libBaseName[libBaseName.length - 1];
+                        lib = "/tmp/" + libBaseName;
                     } else {
-                        lib = sAndroidLibsPrefix + "/" + androidHWID + library.name; // (library.name will have a leading "/")
+                        lib = sAndroidLibsPrefix + "/" + androidHWID + "/" + libBaseName;
                     }
                 }
 
