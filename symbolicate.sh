@@ -31,6 +31,7 @@ cd firefox
 
 # Stage the info in /tmp
 unzip -o $1 -d /tmp
+unzip -o /tmp/symbol.apk -d /tmp; cp /tmp/lib/armeabi-v7a/* /tmp/
 
 # Symbolicate. The last line will be the profile
 ./run-mozilla.sh bin/xpcshell -g . -a . -f ProgressReporter.js -f SymbolicateXPCShell.js -f CmdRunWorker.js -f SymbolicateWorker.js SymbolicateMain.js /tmp/fennec_profile.txt > ../out.txt
