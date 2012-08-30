@@ -100,6 +100,14 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkGC = document.getElementById("chkGC");
+    if (chkGC) {
+      chkGC.checked = has_feature_active("gc");
+      chkGC.onclick = function() {
+        self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
+      }
+    }
+
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
