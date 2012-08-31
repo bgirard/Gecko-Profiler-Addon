@@ -368,7 +368,12 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
-        resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
+        if (platform != "Android") {
+          // Bug 785507 means that when we try to fetch some local files that don't exist
+          // we throw an exception we can't catch thus we freeze here. For now don't support
+          // this if we're doing remote profiling.
+          resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
+        }
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
         dump("Resolve symbol\n");
