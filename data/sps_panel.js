@@ -100,6 +100,14 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkGC = document.getElementById("chkGC");
+    if (chkGC) {
+      chkGC.checked = has_feature_active("gc");
+      chkGC.onclick = function() {
+        self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
+      }
+    }
+
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
@@ -116,6 +124,11 @@ function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
+function sps_import() {
+    dump("call\n");
+    self.port.emit("importpackage", "/tmp/eideticker_profile.zip");   
+}
+document.getElementById("btnPackage").onclick = sps_import;
 function sps_adb_start() {
     self.port.emit("adbstart", "test");
 }

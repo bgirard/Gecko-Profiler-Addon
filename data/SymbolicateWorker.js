@@ -20,13 +20,13 @@ var sAbi = "";
 var sAndroidLibsPrefix = "/tmp";
 var sFennecLibsPrefix = "/tmp";
 
-function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
+function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
     if (platform == "X11") {
         platform = "Linux";
     }
+    sPlatform = platform;
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
     sCmdWorker.postMessage({type: "platform", cmd: platform});
-    sPlatform = platform;
     sAbi = abi;
     sAndroidLibsPrefix = androidLibsPrefix;
     sFennecLibsPrefix = fennecLibsPrefix;
@@ -34,10 +34,16 @@ function init(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
 
 var inited = false;
 
-self.onmessage = function (msg) {
+var symbolicate_onmessage = function (msg) {
   if (!inited) {
     var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
-    init(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    try {
+      init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+    } catch (e) {
+      dump("platform: " + platform + "\n");
+      // If this doesn't work then fall back to call commands directly
+      init(platform);      
+    }
     inited = true;
     return;
   }
@@ -46,13 +52,6 @@ self.onmessage = function (msg) {
 
   if (sharedLibraries != null) {
       sharedLibraries = JSON.parse(sharedLibraries);
-      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
-      // version convert older sharedLibraries formats
-      for (var i = 0; i < sharedLibraries.length; i++) {
-          if (sharedLibraries[i].offset == null) {
-              sharedLibraries[i].offset = 0;
-          }
-      }
   }
 
   var targetPlatform = sPlatform;
@@ -71,6 +70,16 @@ self.onmessage = function (msg) {
     }
   }
 
+  if (sharedLibraries != null) {
+      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
+      // version convert older sharedLibraries formats
+      for (var i = 0; i < sharedLibraries.length; i++) {
+          if (sharedLibraries[i].offset == null) {
+              sharedLibraries[i].offset = 0;
+          }
+      }
+  }
+
   if (sPlatform == "Macintosh" || sPlatform == "Linux" || sPlatform == "Android") {
     symbolicate(profile, sharedLibraries, targetPlatform, function (progress, action) {
       self.postMessage({ id: id, type: "progress", progress: progress, action: action });
@@ -86,6 +95,8 @@ self.onmessage = function (msg) {
     postSymbolicatedProfile(id, profile, {});
   }
 }
+
+self.onmessage = symbolicate_onmessage;
 
 function postSymbolicatedProfile(id, profile, symbolicationTable) {
     var errorString = null;
@@ -116,6 +127,13 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
 function runCommand(cmd, callback) {
   var worker = sCmdWorker;
+  if (worker == null) {
+    setTimeout(function() {
+      var result = runCommandWorker(cmd);
+      callback(result);
+    }, 0);
+    return;
+  }
   worker.addEventListener("message", function workerSentMessage(msg) {
     if (msg.data.cmd == cmd) {
       worker.removeEventListener("message", workerSentMessage);
@@ -240,7 +258,7 @@ function resolveJSDocumentsJSON(reporter, profile) {
             xhr.send(null);
             var scriptStr = xhr.responseText;
             profile.meta.js.source[uri] = scriptStr;
-            dump("source:\n" + scriptStr);
+            //dump("source:\n" + scriptStr);
         } catch (e) {
             dump("Fetch js source request failed: " + e + " (" + uri + ")\n");
             continue;
@@ -271,8 +289,10 @@ function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
     var symbolsToResolve = {};
     for (var i = 0; i < addresses.length; i++) {
         var lib = getContainingLibrary(sharedLibraries, parseInt(addresses[i], 16));
-        if (!lib)
+        if (!lib) {
+            //dump("Cant find lib for address: " + addresses[i] + "\n");
             continue;
+        }
         if (!(lib.name in symbolsToResolve)) {
             symbolsToResolve[lib.name] = { library: lib, symbols: [] };
         }
@@ -348,9 +368,15 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
-        resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
+        if (platform != "Android") {
+          // Bug 785507 means that when we try to fetch some local files that don't exist
+          // we throw an exception we can't catch thus we freeze here. For now don't support
+          // this if we're doing remote profiling.
+          resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
+        }
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
+        dump("Resolve symbol\n");
         var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
                                                    symbolsToResolve, platform,
                                                    resumeContinuation, hwid);
@@ -497,6 +523,7 @@ function relativeToLibrary(library, symbols) {
 
 function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedSymbols, callback, androidHWID) {
     reporter.begin("Resolving symbols for library " + library.name + "...");
+    dump("Resolving symbols for library " + library.name + "\n");
 
     runAsContinuation(function (resumeContinuation) {
         var buckets = bucketsBySplittingArray(unresolvedList, kNumSymbolsPerCall);
@@ -517,7 +544,16 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     libBaseName = libBaseName[libBaseName.length - 1];
                     lib = sFennecLibsPrefix + "/" + libBaseName;
                 } else {
-                    lib = sAndroidLibsPrefix + "/" + androidHWID + library.name; // (library.name will have a leading "/")
+                    var libBaseName = library.name.split("/");
+                    libBaseName = libBaseName[libBaseName.length - 1];
+                    if (libBaseName[0] == "!")
+                        libBaseName = libBaseName.substring(1);
+                    if (!androidHWID) {
+                        // If we don't have a HWID assume all the so are in the tmp root
+                        lib = "/tmp/" + libBaseName;
+                    } else {
+                        lib = sAndroidLibsPrefix + "/" + androidHWID + "/" + libBaseName;
+                    }
                 }
 
                 cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
