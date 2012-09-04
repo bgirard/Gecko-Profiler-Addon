@@ -538,7 +538,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 // but instead just make it work on unixen for now
                 var lib;
 
-                if (library.name.indexOf("/dev/ashmem/") == 0) {
+                if (library.name.indexOf("/dev/ashmem/") == 0 || library.name.indexOf("!") != -1) {
                     // this is likely a fennec library; we pulled it just into sFennecLibsPrefix
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
@@ -546,11 +546,15 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 } else {
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
-                    if (libBaseName[0] == "!")
+                    if (libBaseName[0] == "!") {
                         libBaseName = libBaseName.substring(1);
+                    }
                     if (!androidHWID) {
                         // If we don't have a HWID assume all the so are in the tmp root
                         lib = "/tmp/" + libBaseName;
+                    } else if (libBaseName.indexOf("/") == -1) {
+                        // you better not have any spaces in any of this, because I just don't care about you if that's the case
+                        lib = "`find " + sAndroidLibsPrefix + "/" + androidHWID + " -name " + libBaseName + " | head -1`";
                     } else {
                         lib = sAndroidLibsPrefix + "/" + androidHWID + "/" + libBaseName;
                     }
