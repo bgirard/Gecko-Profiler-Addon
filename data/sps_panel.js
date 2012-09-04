@@ -134,9 +134,13 @@ function sps_adb_start() {
 }
 document.getElementById("btnStart").onclick = sps_adb_start;
 function sps_adb_pull() {
-    self.port.emit("adbpull", "test");
+    self.port.emit("adbpull", { });
 }
 document.getElementById("btnAdb").onclick = sps_adb_pull;
+function sps_adb_pull_only_profile() {
+    self.port.emit("adbpull", { profileOnly: true });
+}
+document.getElementById("btnAdbOnlyProfile").onclick = sps_adb_pull_only_profile;
 function sps_adb_libs() {
     self.port.emit("adblibs", "test");
 }
