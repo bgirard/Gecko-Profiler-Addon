@@ -207,6 +207,9 @@ function findSymbolsToResolveJSON(reporter, profile) {
                 if (frame.location.indexOf("0x") == 0) {
                   addresses[frame.location] = null;
                 }
+                if (frame.lr !== undefined && frame.lr.indexOf("0x") == 0) {
+                  addresses[frame.lr] = null;
+                }
             }
         }
     }
