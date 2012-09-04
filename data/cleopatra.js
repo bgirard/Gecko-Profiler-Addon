@@ -43,10 +43,12 @@ function get_profile_start() {
     document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 }
 
-function get_profile_adb() {
-    self.port.emit("adbpull", "test");
+function get_profile_adb(args) {
+    self.port.emit("adbpull", args);
+  console.log('get_profile_adb', args);
     document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 }
+
 
 function get_profile_libs() {
     self.port.emit("adblibs", "test");
@@ -73,7 +75,7 @@ self.port.on("get_profile_desktop", function(val) {
     get_profile_desktop();
 });
 self.port.on("get_profile_adb", function(val) {
-    get_profile_adb();
+    get_profile_adb(val);
 });
 self.port.on("get_profile_start", function(val) {
     get_profile_start();
