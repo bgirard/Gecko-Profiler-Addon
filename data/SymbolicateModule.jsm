@@ -1,9 +1,24 @@
+/* -*- Mode: js2; indent-tabs-mode: nil -*- */
+
 var EXPORTED_SYMBOLS = ["symbolicate"];
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-const DEFAULT_SYMBOLICATION_URL = "http://127.0.0.1:8000";
+// Change this in main as well where we default init the pref
+const DEFAULT_SYMBOLICATION_URL = "http://symbolapi.mozilla.org/";
+
+function getPref(prefName, defaultValue) {
+  var value = defaultValue;
+  try {
+      var prefs = Cc["@mozilla.org/preferences-service;1"]
+                  .getService(Ci.nsIPrefService).getBranch("profiler.");
+      value = prefs.getCharPref(prefName);
+  } catch (e) {
+      value = defaultValue;
+  }
+  return value;
+}
 
 var sWorker = null;
 function getWorker() {
@@ -11,13 +26,18 @@ function getWorker() {
     sWorker = new ChromeWorker("SymbolicateWorker.js");
     var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
     var abi = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).XPCOMABI;
-    sWorker.postMessage({ platform: hh["platform"], abi: abi });
+    sWorker.postMessage({
+        platform: hh["platform"],
+        abi: abi,
+        androidLibsPrefix: getPref("androidLibsHostPath", "/tmp"),
+        fennecLibsPrefix: getPref("fennecLibsHostPath", "/tmp")
+    });
   }
   return sWorker;
 }
 
 var sProfileID = 0;
-function symbolicate(profile, sharedLibraries, progressCallback, finishCallback) {
+function symbolicate(profile, targetPlatform, sharedLibraries, progressCallback, finishCallback, hwid) {
   var worker = getWorker();
 
   var id = sProfileID++;
@@ -41,14 +61,12 @@ function symbolicate(profile, sharedLibraries, progressCallback, finishCallback)
     }
   });
 
-  var uri = "";
-  try {
-      var prefs = Cc["@mozilla.org/preferences-service;1"]
-                  .getService(Ci.nsIPrefService).getBranch("profiler.");
-      uri = prefs.getCharPref("symbolicationUrl");
-  } catch (e) {
-      uri = DEFAULT_SYMBOLICATION_URL;
-  }
-
-  worker.postMessage({ id: id, profile: profile, sharedLibraries: sharedLibraries, uri: uri });
+  var uri = getPref("symbolicationUrl", DEFAULT_SYMBOLICATION_URL);
+  worker.postMessage({ id: id,
+                       profile: profile,
+                       targetPlatform: targetPlatform,
+                       sharedLibraries: sharedLibraries,
+                       uri: uri,
+                       androidHWID: hwid
+                     });
 }

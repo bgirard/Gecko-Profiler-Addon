@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gecko Profiler - Settings</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/ui.css">
+  </head>
+  <body>
+    <div id="ui">
+      <ul id="fileList">
+        <li onclick="select_tab('tabSimple');" id="tabSimple" class="fileListItem">
+          <span class="fileListItemTitle">
+            Simple Configuration
+          </span>
+          <span class="fileListItemDescription">
+            Select active features.
+          </span>
+        </li>
+        <li onclick="select_tab('tabAdvanced');" id="tabAdvanced" class="fileListItem">
+          <span class="fileListItemTitle">
+            Advanced Configuration
+          </span>
+          <span class="fileListItemDescription">
+            Select experimental and debug options.
+          </span>
+        </li>
+      </ul>
+      <div id="infobar">
+        Mouse over a field for a detailed description. 
+      </div>
+      <div id="mainarea">
+      </div>
+    </div>
+  </body>
+</html>

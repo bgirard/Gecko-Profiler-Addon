@@ -1,15 +1,30 @@
 var popen, fread, pclose;
 
+var inited = false;
+
 function init(platform) {
     var lib;
-    if (platform == "Linux") {
-        lib = ctypes.open("/lib64/libc.so.6"); 
+    if (platform == "X11" || platform == "Linux") {
+        // https://developer.mozilla.org/en/js-ctypes/Using_js-ctypes#Calling_LibC_routines_on_Linux.2FPOSIX
+        try {  
+            /* Linux */  
+            lib = ctypes.open("libc.so.6");  
+        } catch (e) {  
+            /* Most other Unixes */  
+            try {
+                lib = ctypes.open("libc.so");  
+            } catch(err) {
+                dump("Could not open libc at 'libc.so.6 or libc.so'\n");
+                throw "Could not open libc at 'libc.so.6 or ibc.so'";
+            }
+        }  
     } else if (platform == "Macintosh"){
         lib = ctypes.open("/usr/lib/libc.dylib"); 
     } else if (platform == "Windows") {
         return;
     } else {
-        throw "Unknown platform";
+        dump("Unknown platform '"  + platform + "'\n");
+        throw "Unknown platform: " + platform;
     }
     
     popen = lib.declare("popen",  
@@ -33,24 +48,35 @@ function init(platform) {
                          ctypes.int,     // Return int
                          ctypes.voidptr_t
                             );
+    inited = true;
 }
-
-var inited = false;
 
 self.onmessage = function (msg) {
   if (!inited) {
-    init(msg.data);
-    inited = true;
+    init(msg.data.cmd);
     return;
   }
 
-  var cmd = msg.data;
-  var result = runCommand(cmd);
-  self.postMessage({ cmd: cmd, result: result });
+  var cmd = msg.data.cmd;
+  if (msg.data.type === "runCommand") {
+    var result = runCommandWorker(cmd);
+    self.postMessage({ cmd: cmd, result: result });
+  } else if (msg.data.type === "platform") {
+    // do nothing
+  } else if (msg.data.type === "exec") {
+    exec(cmd);
+  } else {
+    dump("Bad message type\n");
+  }
 }
 
+function exec(cmd) {
+    var file = popen(cmd, "r")
+    pclose(file);
+    return "";
+}
 
-function runCommand(cmd) {
+function runCommandWorker(cmd) {
     var file = popen(cmd, "r")
     
     const bufferSize = 1000;
@@ -59,7 +85,11 @@ function runCommand(cmd) {
     var outList = [];
     while (size == bufferSize) {
         size = fread(buffer, 1, bufferSize, file);
-        outList.push(buffer.readString().substring(0, size));
+        try {
+            outList.push(buffer.readString().substring(0, size));
+        } catch (e) {
+            //dump("Exception reading line, ignoring characters.\n");
+        }
     }
     pclose(file);
     

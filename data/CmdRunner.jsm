@@ -8,9 +8,14 @@ function getWorker() {
   if (!sWorker) {
     sWorker = new ChromeWorker("CmdRunWorker.js");
     var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
-    sWorker.postMessage(hh["platform"]);
+    sWorker.postMessage({type: "platform", cmd: hh["platform"]});
   }
   return sWorker;
+}
+
+function exec(cmd) {
+  var worker = getWorker();
+  worker.postMessage({type: "exec", cmd: cmd});
 }
 
 function runCommand(cmd, callback) {
@@ -21,5 +26,5 @@ function runCommand(cmd, callback) {
       callback(msg.data.result);
     }
   });
-  worker.postMessage(cmd);
+  worker.postMessage({type: "runCommand", cmd: cmd});
 }

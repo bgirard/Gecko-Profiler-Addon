@@ -36,12 +36,16 @@
 var gStartedWithFeatures = [];
 var gFeatureList = [];
 var gUpdateInterval = null;
+var gFeaturesPrefs = {};
 
 function has_feature(feature) {
   return gFeatureList.indexOf(feature) !== -1;
 }
 function has_feature_active(feature) {
   return gStartedWithFeatures.indexOf(feature) !== -1;
+}
+function get_feature_pref(feature) {
+      return gFeaturesPrefs[feature] === true;
 }
 
 function sps_toggle_active() {
@@ -64,6 +68,7 @@ self.port.on("onHide", function(val) {
 self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
+    gFeaturesPrefs = val.profilerFeaturesPrefs;
 
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
@@ -74,6 +79,9 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var btnSave = document.getElementById("btnSave");
+    btnSave.disabled = !val.isActive && !has_feature_active("copyProfileOnStop");
+
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
@@ -83,7 +91,25 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkJS = document.getElementById("chkJS");
+    if (chkJS) {
+      chkJS.disabled = !has_feature("js") || val.isActive;
+      chkJS.checked = has_feature_active("js");
+      chkJS.onclick = function() {
+        self.port.emit("set_feature", {feature: "js", value: chkJS.checked});
+      }
+    }
+
+    var chkGC = document.getElementById("chkGC");
+    if (chkGC) {
+      chkGC.checked = has_feature_active("gc");
+      chkGC.onclick = function() {
+        self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
+      }
+    }
+
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
+    document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
@@ -98,6 +124,32 @@ function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
+function sps_import() {
+    dump("call\n");
+    self.port.emit("importpackage", "/tmp/eideticker_profile.zip");   
+}
+document.getElementById("btnPackage").onclick = sps_import;
+function sps_adb_start() {
+    self.port.emit("adbstart", "test");
+}
+document.getElementById("btnStart").onclick = sps_adb_start;
+function sps_adb_pull() {
+    self.port.emit("adbpull", { });
+}
+document.getElementById("btnAdb").onclick = sps_adb_pull;
+function sps_adb_pull_only_profile() {
+    self.port.emit("adbpull", { profileOnly: true });
+}
+document.getElementById("btnAdbOnlyProfile").onclick = sps_adb_pull_only_profile;
+function sps_adb_libs() {
+    self.port.emit("adblibs", "test");
+}
+document.getElementById("btnAdbLibs").onclick = sps_adb_libs;
+
+function open_settings() {
+    self.port.emit("opensettings", "");
+}
+document.getElementById("btnSettings").onclick = open_settings;
 
 self.port.on("getprofile", function(val) {
     document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;

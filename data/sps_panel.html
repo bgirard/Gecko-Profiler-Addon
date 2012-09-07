@@ -13,9 +13,20 @@
   <body>
     Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
     Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
+    <div id="divAdb">
+      Mobile:
+      <button id="btnStart" type="button">Start</button>
+      <button id="btnAdb" type="button">Pull</button>
+      <button id="btnAdbOnlyProfile" type="button">Pull (Profile Only)</button>
+      <button id="btnAdbLibs" type="button">Get Libs</button><br>
+      <button id="btnPackage" type="button">Import Package</button><br>
+    </div>
+    Settings: <button id="btnSettings" type="button">Settings</button><br>
     <!--Bugzilla: <button id="btnFileBug" type="button">File Bug</button>-->
     <canvas width="120" height="60"></canvas><br>
     <input id=chkJank type="checkbox" disabled="disabled"/> Jank-Only
-    <input id=chkStackwalk type="checkbox" disabled="disabled"/> Stackwalk
+    <input id=chkStackwalk type="checkbox" disabled="disabled"/> Stackwalk<br>
+    <input id=chkJS type="checkbox" disabled="disabled"/> JS Profiling
+    <input id=chkGC type="checkbox"/> GC Stats
   </body>
 </html>
