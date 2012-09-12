@@ -107,20 +107,11 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
     var bundle;
 
-    if (typeof profile === "string") {
-
-      bundle = {
-          format: "profileStringWithSymbolicationTable,1",
-          profileString: profile,
-          symbolicationTable: symbolicationTable
-      };
-    } else {
-      bundle = {
-          format: "profileJSONWithSymbolicationTable,1",
-          profileJSON: profile,
-          symbolicationTable: symbolicationTable
-      };
-    }
+    bundle = {
+        format: "profileJSONWithSymbolicationTable,1",
+        profileJSON: profile,
+        symbolicationTable: symbolicationTable
+    };
 
     self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle), error: errorString });
 }
@@ -351,11 +342,7 @@ function getSplitLines(reporter, profile) {
 }
 
 function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
-    if (typeof profile === "string") {
-      return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
-    } else {
-      return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
-    }
+    return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
 }
 
 function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
@@ -387,31 +374,6 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
     });
 }
 
-function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
-    runAsContinuation(function (resumeContinuation) {
-        var totalProgressReporter = new ProgressReporter();
-        var subreporters = totalProgressReporter.addSubreporters({
-            lineSplitting: 7,
-            symbolFinding: 200,
-            symbolLibraryAssigning: 200,
-            symbolResolving: 2000,
-        });
-        totalProgressReporter.addListener(function (r) {
-            progressCallback(r.getProgress(), r.getAction());
-        });
-        totalProgressReporter.begin("Symbolicating profile...");
-        var lines = getSplitLines(subreporters.lineSplitting, profile);
-        sharedLibraries = getSharedLibraries(lines, sharedLibraries);
-        var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
-        var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
-                                                        sharedLibraries, foundSymbols);
-        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
-                                                   symbolsToResolve, platform,
-                                                   resumeContinuation, hwid);
-        finishCallback(resolvedSymbols);
-    });
-}
-
 function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
     var totalProgressReporter = new ProgressReporter();
     var subreporters = totalProgressReporter.addSubreporters({
@@ -421,13 +383,8 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     totalProgressReporter.begin("Symbolicating profile...");
 
-    if (typeof profile === "string") {
-      var lines = getSplitLines(subreporters.lineSplitting, profile);
-      var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
-    } else {
-      var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
-      resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
-    }
+    var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+    resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
 
     stackAddresses.sort();
 
