@@ -107,20 +107,11 @@ function postSymbolicatedProfile(id, profile, symbolicationTable) {
 
     var bundle;
 
-    if (typeof profile === "string") {
-
-      bundle = {
-          format: "profileStringWithSymbolicationTable,1",
-          profileString: profile,
-          symbolicationTable: symbolicationTable
-      };
-    } else {
-      bundle = {
-          format: "profileJSONWithSymbolicationTable,1",
-          profileJSON: profile,
-          symbolicationTable: symbolicationTable
-      };
-    }
+    bundle = {
+        format: "profileJSONWithSymbolicationTable,1",
+        profileJSON: profile,
+        symbolicationTable: symbolicationTable
+    };
 
     self.postMessage({ id: id, type: "finished", profile: JSON.stringify(bundle), error: errorString });
 }
@@ -206,6 +197,9 @@ function findSymbolsToResolveJSON(reporter, profile) {
                 var frame = sample.frames[k];
                 if (frame.location.indexOf("0x") == 0) {
                   addresses[frame.location] = null;
+                }
+                if (frame.lr !== undefined && frame.lr.indexOf("0x") == 0) {
+                  addresses[frame.lr] = null;
                 }
             }
         }
@@ -348,11 +342,7 @@ function getSplitLines(reporter, profile) {
 }
 
 function symbolicate(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
-    if (typeof profile === "string") {
-      return symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
-    } else {
-      return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
-    }
+    return symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid);
 }
 
 function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
@@ -384,31 +374,6 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
     });
 }
 
-function symbolicateStrProfile(profile, sharedLibraries, platform, progressCallback, finishCallback, hwid) {
-    runAsContinuation(function (resumeContinuation) {
-        var totalProgressReporter = new ProgressReporter();
-        var subreporters = totalProgressReporter.addSubreporters({
-            lineSplitting: 7,
-            symbolFinding: 200,
-            symbolLibraryAssigning: 200,
-            symbolResolving: 2000,
-        });
-        totalProgressReporter.addListener(function (r) {
-            progressCallback(r.getProgress(), r.getAction());
-        });
-        totalProgressReporter.begin("Symbolicating profile...");
-        var lines = getSplitLines(subreporters.lineSplitting, profile);
-        sharedLibraries = getSharedLibraries(lines, sharedLibraries);
-        var foundSymbols = findSymbolsToResolve(subreporters.symbolFinding, lines);
-        var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
-                                                        sharedLibraries, foundSymbols);
-        var resolvedSymbols = yield resolveSymbols(subreporters.symbolResolving,
-                                                   symbolsToResolve, platform,
-                                                   resumeContinuation, hwid);
-        finishCallback(resolvedSymbols);
-    });
-}
-
 function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
     var totalProgressReporter = new ProgressReporter();
     var subreporters = totalProgressReporter.addSubreporters({
@@ -418,13 +383,8 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     totalProgressReporter.begin("Symbolicating profile...");
 
-    if (typeof profile === "string") {
-      var lines = getSplitLines(subreporters.lineSplitting, profile);
-      var stackAddresses = findSymbolsToResolve(subreporters.symbolFinding, lines);
-    } else {
-      var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
-      resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
-    }
+    var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+    resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
 
     stackAddresses.sort();
 
@@ -538,7 +498,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 // but instead just make it work on unixen for now
                 var lib;
 
-                if (library.name.indexOf("/dev/ashmem/") == 0) {
+                if (library.name.indexOf("/dev/ashmem/") == 0 || library.name.indexOf("!") != -1) {
                     // this is likely a fennec library; we pulled it just into sFennecLibsPrefix
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
@@ -546,11 +506,15 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                 } else {
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
-                    if (libBaseName[0] == "!")
+                    if (libBaseName[0] == "!") {
                         libBaseName = libBaseName.substring(1);
+                    }
                     if (!androidHWID) {
                         // If we don't have a HWID assume all the so are in the tmp root
                         lib = "/tmp/" + libBaseName;
+                    } else if (libBaseName.indexOf("/") == -1) {
+                        // you better not have any spaces in any of this, because I just don't care about you if that's the case
+                        lib = "`find " + sAndroidLibsPrefix + "/" + androidHWID + " -name " + libBaseName + " | head -1`";
                     } else {
                         lib = sAndroidLibsPrefix + "/" + androidHWID + "/" + libBaseName;
                     }
