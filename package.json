@@ -1,9 +1,9 @@
 {
-    "description": "A profiler UI for the built-in Gecko profiler", 
+    "description": "Provide advanced profiling results integrating both the Javascript and C++ (platform) execution. Focus in on the cause of slow events causing the browser to be unresponsive and share the profiles with others. Ideal for both platform or Web development. For all the profiling features use a Nightly firefox build.", 
     "license": "MPL2", 
     "author": "Benoit Girard <bgirard@mozilla.com>", 
     "url": "https://github.com/bgirard/Gecko-Profiler-Addon", 
-    "version": "1.9.5",
+    "version": "1.9.6",
     "dependencies": [
       "addon-kit",
       "api-utils",
