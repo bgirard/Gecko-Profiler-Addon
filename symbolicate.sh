@@ -17,7 +17,7 @@ ls firefox-17.0a1.en-US.linux-i686.tests.zip > /dev/null || {
 }
 
 ls firefox/mochitest > /dev/null || {
-  unzip firefox-17.0a1.en-US.linux-i686.tests.zip -d firefox
+  unzip -q firefox-17.0a1.en-US.linux-i686.tests.zip -d firefox
 } 
 
 # Copy the latest script files picked up by the shell
@@ -30,8 +30,8 @@ cp data/CmdRunWorker.js firefox
 cd firefox
 
 # Stage the info in /tmp
-unzip -o $1 -d /tmp
-unzip -o /tmp/symbol.apk -d /tmp; cp /tmp/lib/armeabi-v7a/* /tmp/
+unzip -q -o $1 -d /tmp
+unzip -q -o /tmp/symbol.apk -d /tmp; cp /tmp/lib/armeabi-v7a/* /tmp/
 
 # Symbolicate. The last line will be the profile
 ./run-mozilla.sh bin/xpcshell -g . -a . -f ProgressReporter.js -f SymbolicateXPCShell.js -f CmdRunWorker.js -f SymbolicateWorker.js SymbolicateMain.js /tmp/fennec_profile.txt > ../out.txt
@@ -42,7 +42,7 @@ tail -1 out.txt > symbolicated_profile.txt
 rm out.txt
 
 # Compress the profile
-zip $2 symbolicated_profile.txt
+zip -q $2 symbolicated_profile.txt
 rm symbolicated_profile.txt
 
 
