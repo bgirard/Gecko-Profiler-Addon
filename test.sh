@@ -36,9 +36,9 @@ then
   #exit
 fi
 
-if [ -e /Users/markus/code/obj-m-opt/dist/Nightly.app ]
+if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
-  cfx run --binary /Users/markus/code/obj-m-opt/dist/Nightly.app
+  cfx run --binary /Volumes/Nightly/FirefoxNightly.app
   exit
 fi
 
