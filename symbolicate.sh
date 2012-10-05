@@ -4,20 +4,23 @@
 
 # Here we use a fixed nightly instead of a nightly so that the script doesn't break
 # every 6 weeks when we bump the version number
-ls firefox-17.0a1.en-US.linux-i686.tar.bz2 > /dev/null || {
-  wget ftp://ftp.mozilla.org/pub/firefox/nightly/2012/08/2012-08-27-03-05-49-mozilla-central/firefox-17.0a1.en-US.linux-i686.tar.bz2
+SERVER_PATH=ftp://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/2012-10-01-04-20-10-mozilla-aurora/
+VER=17.0a2
+
+ls firefox-$VER.en-US.linux-i686.tar.bz2 > /dev/null || {
+  wget $SERVER_PATH/firefox-$VER.en-US.linux-i686.tar.bz2
 }
 
 ls firefox > /dev/null || {
-  tar -xvf firefox-17.0a1.en-US.linux-i686.tar.bz2
+  tar -xvf firefox-$VER.en-US.linux-i686.tar.bz2
 }
 
-ls firefox-17.0a1.en-US.linux-i686.tests.zip > /dev/null || {
-  wget ftp://ftp.mozilla.org/pub/firefox/nightly/2012/08/2012-08-27-03-05-49-mozilla-central/firefox-17.0a1.en-US.linux-i686.tests.zip
+ls firefox-$VER.en-US.linux-i686.tests.zip > /dev/null || {
+  wget $SERVER_PATH/firefox-$VER.en-US.linux-i686.tests.zip
 }
 
 ls firefox/mochitest > /dev/null || {
-  unzip -q firefox-17.0a1.en-US.linux-i686.tests.zip -d firefox
+  unzip -q firefox-$VER.en-US.linux-i686.tests.zip -d firefox
 } 
 
 # Copy the latest script files picked up by the shell
