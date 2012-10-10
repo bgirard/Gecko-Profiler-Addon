@@ -120,12 +120,15 @@ function bugzilla_file_bug() {
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
 
+function sps_restart() {
+    self.port.emit("restart");
+}
+document.getElementById("btnRestart").onclick = sps_restart;
 function sps_save() {
     self.port.emit("getprofile", "test");   
 }
 document.getElementById("btnSave").onclick = sps_save;
 function sps_import() {
-    dump("call\n");
     self.port.emit("importpackage", "/tmp/eideticker_profile.zip");   
 }
 document.getElementById("btnPackage").onclick = sps_import;
