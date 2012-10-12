@@ -159,7 +159,7 @@ self.port.on("getprofile", function(val) {
 });
 
 self.port.on("responsive", function(val) {
-  let canvas = document.getElementsByTagName("canvas")[0];
+  let canvas = document.getElementById("responseGraph");
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 1;
   reset(ctx, canvas);
