@@ -32,13 +32,13 @@ fi
 if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app ]
 then
   echo "64 gdb"
-  #cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
-  #exit
+  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
+  exit
 fi
 
-if [ -e /Users/markus/code/obj-m-opt/dist/Nightly.app ]
+if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
-  cfx run --binary /Users/markus/code/obj-m-opt/dist/Nightly.app
+  cfx run --binary /Volumes/Nightly/FirefoxNightly.app
   exit
 fi
 
