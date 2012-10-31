@@ -118,7 +118,7 @@ self.port.on("target_error", function(val) {
     dump("taget error\n");
     document.getElementById("divTargetLog").style.display = "";
     document.getElementById("divTargetControls").style.display = "none";
-    document.getElementById("divTargetLog").innerHTML = "Log:<br>val;
+    document.getElementById("divTargetLog").innerHTML = "Log:<br>" + val;
     dump("taget errored\n");
 });
 
