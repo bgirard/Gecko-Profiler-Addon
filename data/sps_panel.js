@@ -69,11 +69,12 @@ self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
     gFeaturesPrefs = val.profilerFeaturesPrefs;
+    dump("FEATURES PREF: " + JSON.stringify(gFeaturesPrefs) + "\n");
 
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
       chkJank.disabled = !has_feature("jank") || val.isActive;
-      chkJank.checked = has_feature_active("jank");
+      chkJank.checked = val.isActive ? has_feature_active("jank") : get_feature_pref("jank");
       chkJank.onclick = function() {
         self.port.emit("set_feature", {feature: "jank", value: chkJank.checked});
       }
@@ -85,7 +86,7 @@ self.port.on("change_status", function(val) {
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
-      chkStackwalk.checked = has_feature_active("stackwalk");
+      chkStackwalk.checked = val.isActive ? has_feature_active("stackwalk") : get_feature_pref("stackwalk");
       chkStackwalk.onclick = function() {
         self.port.emit("set_feature", {feature: "stackwalk", value: chkStackwalk.checked});
       }
@@ -94,7 +95,7 @@ self.port.on("change_status", function(val) {
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
-      chkJS.checked = has_feature_active("js");
+      chkJS.checked = val.isActive ? has_feature_active("js") : get_feature_pref("js");
       chkJS.onclick = function() {
         self.port.emit("set_feature", {feature: "js", value: chkJS.checked});
       }
@@ -102,7 +103,7 @@ self.port.on("change_status", function(val) {
 
     var chkGC = document.getElementById("chkGC");
     if (chkGC) {
-      chkGC.checked = has_feature_active("gc");
+      chkGC.checked = get_feature_pref("gc");
       chkGC.onclick = function() {
         self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
       }
