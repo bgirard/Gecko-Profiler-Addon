@@ -155,6 +155,12 @@ function open_settings() {
 }
 document.getElementById("btnSettings").onclick = open_settings;
 
+function select_target_change() {
+    var value = document.getElementById("selectTarget").value;
+    self.port.emit("changetarget", value);
+}
+document.getElementById("selectTarget").onchange = select_target_change;
+
 self.port.on("getprofile", function(val) {
     document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;
 });
