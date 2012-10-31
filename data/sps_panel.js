@@ -115,11 +115,9 @@ self.port.on("change_status", function(val) {
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
 self.port.on("target_error", function(val) {
-    dump("taget error\n");
     document.getElementById("divTargetLog").style.display = "";
     document.getElementById("divTargetControls").style.display = "none";
-    document.getElementById("divTargetLog").innerHTML = "Log:<br>" + val;
-    dump("taget errored\n");
+    document.getElementById("TargetLog").value = val;
 });
 
 function bugzilla_file_bug() {
