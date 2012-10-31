@@ -109,7 +109,7 @@ self.port.on("change_status", function(val) {
     }
 
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
-    document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
+    document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
