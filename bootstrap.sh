@@ -9,4 +9,4 @@ git checkout 1.10
 cd packages
 git clone https://github.com/erikvold/vold-utils-jplib
 git clone https://github.com/erikvold/xulkeys-jplib
-git clone https://github.com/erikvold/toolbarbutton-jplib/
+git clone https://github.com/voldsoftware/toolbarbutton-jplib.git

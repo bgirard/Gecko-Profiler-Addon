@@ -24,7 +24,7 @@ In order to install this add-on, you need a copy of the add-on SDK.  Please do t
 3. `cd packages`
    `git clone https://github.com/erikvold/vold-utils-jplib`
    `git clone https://github.com/erikvold/xulkeys-jplib`
-   `git clone https://github.com/erikvold/toolbarbutton-jplib/`
+   `git clone https://github.com/voldsoftware/toolbarbutton-jplib.git`
    `cd ..`
 4. `. bin/activate`
 5. `cd ..`
