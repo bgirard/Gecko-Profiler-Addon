@@ -116,13 +116,22 @@ self.port.on("change_status", function(val) {
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
+var onShow = {
+  "TcpConnect": function() {
+    document.getElementById("tcpStatus").innerHTML = "";
+  }
+}
+
 function showPanel(name) {
-    var panels = document.getElementsByClassName("targetPanel");
-    for (var i in panels) {
+                 // Why is this needed?
+    var panels = XPCNativeWrapper.unwrap(document.getElementsByClassName("targetPanel"));
+    for (var i = 0; i < panels.length; i++) {
         var elem = panels[i];
         elem.style.display = "none";
     }
     document.getElementById("divType" + name).style.display = "";
+    if (onShow[name])
+      onShow[name]();
 }
 
 self.port.on("show_panel", function(val) {
