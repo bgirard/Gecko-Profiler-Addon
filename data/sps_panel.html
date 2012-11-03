@@ -11,7 +11,12 @@
   </style>
   </head>
   <body>
-    Target: <select id="selectTarget"><option value="local">Local</option><option value="adb">TCP over ADB</option></select><br>
+    Target: 
+    <select id="selectTarget">
+      <option value="local">Local</option>
+      <option value="adb">TCP</option>
+      <option value="adb">Mobile USB</option>
+    </select><br>
     <div id="divTargetLog" style="display:none">
       <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
     </div>
