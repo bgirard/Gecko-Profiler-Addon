@@ -103,6 +103,7 @@ self.port.on("change_status", function(val) {
 
     var chkGC = document.getElementById("chkGC");
     if (chkGC) {
+      chkGC.disabled = !has_feature("gc") || val.isActive;
       chkGC.checked = get_feature_pref("gc");
       chkGC.onclick = function() {
         self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
