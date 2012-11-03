@@ -193,12 +193,12 @@ self.port.on("getprofile", function(val) {
 });
 
 self.port.on("responsive", function(val) {
-  let canvas = document.getElementById("responseGraph");
-  var ctx = canvas.getContext("2d");
-  ctx.lineWidth = 1;
-  reset(ctx, canvas);
-  drawGraph(ctx, val, 5, 5, 100, 50);
-  drawAxis(ctx, 5, 5, 100, 50);
+    let canvas = document.getElementById("responseGraph");
+    var ctx = canvas.getContext("2d");
+    ctx.lineWidth = 1;
+    reset(ctx, canvas);
+    drawGraph(ctx, val, 5, 5, 100, 50);
+    drawAxis(ctx, 5, 5, 100, 50);
 });
 
 // Plot sizes
