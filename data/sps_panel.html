@@ -15,9 +15,15 @@
     Target: 
     <select id="selectTarget">
       <option value="local">Local</option>
-      <option value="adb">TCP</option>
+      <option value="tcp">TCP</option>
       <option value="adb">Mobile USB</option>
     </select><br>
+    <div class="targetPanel" id="divTypeTcpConnect" style="display:none">
+      Host: <input id="tcpHostname" value="localhost" style="width:100px;"></input><br>
+      Port: <input id="tcpPort" value="6000" style="width:100px;"></input><br>
+      <button id="btnTcpConnect" type="button" style="left: 150px;">Connect</button><br>
+      <a id="tcpStatus"></a>
+    </div>
     <div class="targetPanel" id="divTypeLog" style="display:none">
       <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
     </div>

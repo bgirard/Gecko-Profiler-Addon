@@ -119,11 +119,14 @@ function showPanel(name) {
     var panels = document.getElementsByClassName("targetPanel");
     for (var i in panels) {
         var elem = panels[i];
-        dump(elem + "\n");
         elem.style.display = "none";
     }
     document.getElementById("divType" + name).style.display = "";
 }
+
+self.port.on("show_panel", function(val) {
+    showPanel(val);
+});
 
 self.port.on("target_log", function(val) {
     showPanel("Log");
@@ -135,6 +138,15 @@ function bugzilla_file_bug() {
 }
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
+function tcpConnect() {
+    var options = {
+        hostname: document.getElementById("tcpHostname").value,
+        port: document.getElementById("tcpPort").value,
+    };
+    document.getElementById("tcpStatus").innerHTML = "Connecting to " + options.hostname + ":" + options.port + ".";
+    self.port.emit("tcpconnect", options);
+}
+document.getElementById("btnTcpConnect").onclick = tcpConnect;
 
 function sps_restart() {
     self.port.emit("restart");
