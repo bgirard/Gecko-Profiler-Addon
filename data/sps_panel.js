@@ -115,9 +115,18 @@ self.port.on("change_status", function(val) {
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
-self.port.on("target_error", function(val) {
-    document.getElementById("divTargetLog").style.display = "";
-    document.getElementById("divTargetControls").style.display = "none";
+function showPanel(name) {
+    var panels = document.getElementsByClassName("targetPanel");
+    for (var i in panels) {
+        var elem = panels[i];
+        dump(elem + "\n");
+        elem.style.display = "none";
+    }
+    document.getElementById("divType" + name).style.display = "";
+}
+
+self.port.on("target_log", function(val) {
+    showPanel("Log");
     document.getElementById("TargetLog").value = val;
 });
 

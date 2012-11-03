@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <style type="text/css">
   html, body {
     padding: 0;
@@ -17,10 +18,10 @@
       <option value="adb">TCP</option>
       <option value="adb">Mobile USB</option>
     </select><br>
-    <div id="divTargetLog" style="display:none">
+    <div class="targetPanel" id="divTypeLog" style="display:none">
       <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
     </div>
-    <div id="divTargetControls">
+    <div class="targetPanel" id="divTypeControls">
       Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
       Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
       Special: <button id="btnRestart" type="button">Profile Startup</button><br>
