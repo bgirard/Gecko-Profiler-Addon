@@ -17,7 +17,6 @@ function has_feature_active(feature) {
 }
 
 self.port.on("change_status", function(val) {
-  dump("Got feature change\n");
   gStartedWithFeatures = val.startedWithFeatures;
   gFeatureList = val.profilerFeatures;
   gFeaturesPrefs = val.profilerFeaturesPrefs;

@@ -69,7 +69,6 @@ self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
     gFeaturesPrefs = val.profilerFeaturesPrefs;
-    dump("FEATURES PREF: " + JSON.stringify(gFeaturesPrefs) + "\n");
 
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
@@ -138,7 +137,7 @@ self.port.on("show_panel", function(val) {
     showPanel(val);
 });
 
-self.port.on("target_log", function(val) {
+self.port.on("show_log", function(val) {
     showPanel("Log");
     document.getElementById("TargetLog").value = val;
 });
