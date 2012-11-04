@@ -112,6 +112,7 @@ self.port.on("change_status", function(val) {
     document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
+    document.getElementById("adbLibCache").value = val.adbLibCache;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
@@ -190,6 +191,11 @@ function open_settings() {
     self.port.emit("opensettings", "");
 }
 document.getElementById("btnSettings").onclick = open_settings;
+
+function browse_lib_folder() {
+    self.port.emit("browselibfolder", document.getElementById("adbLibCache"));
+}
+document.getElementById("btnALibBrowse").onclick = browse_lib_folder;
 
 function select_target_change() {
     var value = document.getElementById("selectTarget").value;
