@@ -244,6 +244,10 @@ function resolveJSDocumentsJSON(reporter, profile) {
     var documentsToFetch = Object.keys(addresses);
     for (var i = 0; i < documentsToFetch.length; i++) {
         var documentToFetch = documentsToFetch[i];
+        // XXX Bug 785507 causes a invalid URL to throw an uncatchable error :(
+        //     for now we skip any non http document.
+        if (documentToFetch.indexOf("http") != 0)
+          continue;
         dump("Fetch: " + documentToFetch + "\n");
         try {
             var uri = documentToFetch;
