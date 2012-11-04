@@ -148,6 +148,17 @@ function bugzilla_file_bug() {
 }
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
+function adbConnect() {
+    var options = {
+        adbLibCache: document.getElementById("adbLibCache").value,
+        port: document.getElementById("adbPort").value,
+    };
+    document.getElementById("adbStatus").innerHTML = "Connecting via adb on port " + options.port + ".";
+    self.port.emit("adbconnect", options);
+}
+
+document.getElementById("btnAdbConnect").onclick = adbConnect;
+
 function tcpConnect() {
     var options = {
         hostname: document.getElementById("tcpHostname").value,
