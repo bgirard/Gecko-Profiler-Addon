@@ -123,12 +123,21 @@ var onShow = {
 }
 
 function showPanel(name) {
+    // I'm not sure but sometimes getElementsByClassName doesn't
+    // always return the elements I expect.
                  // Why is this needed?
-    var panels = XPCNativeWrapper.unwrap(document.getElementsByClassName("targetPanel"));
-    for (var i = 0; i < panels.length; i++) {
-        var elem = panels[i];
-        elem.style.display = "none";
-    }
+    //var panels = XPCNativeWrapper.unwrap(document.getElementsByClassName("targetPanel"));
+    //for (var i = 0; i < panels.length; i++) {
+    //    var elem = panels[i];
+    //    elem.style.display = "none";
+    //}
+    // Do this manually until we can figure out getElementsByClassName
+    document.getElementById("divTypeTcpConnect").style.display = "none";
+    document.getElementById("divTypeAdbConfig").style.display = "none";
+    document.getElementById("divTypeLog").style.display = "none";
+
+    document.getElementById("divTypeControls").style.display = "none";
+
     document.getElementById("divType" + name).style.display = "";
     if (onShow[name])
       onShow[name]();
