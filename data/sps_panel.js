@@ -119,6 +119,9 @@ document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 var onShow = {
   "TcpConnect": function() {
     document.getElementById("tcpStatus").innerHTML = "";
+  },
+  "AdbConnect": function () {
+    document.getElementById("adbStatus").innerHTML = "";
   }
 }
 
