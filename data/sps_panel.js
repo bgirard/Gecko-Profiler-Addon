@@ -143,6 +143,10 @@ self.port.on("show_log", function(val) {
     document.getElementById("TargetLog").value = val;
 });
 
+self.port.on("show_adb_status", function(val) {
+  document.getElementById("adbStatus").innerHTML = val;
+});
+
 function bugzilla_file_bug() {
     self.port.emit("filebug", "test");
 }
