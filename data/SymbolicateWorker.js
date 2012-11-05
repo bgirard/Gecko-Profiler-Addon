@@ -506,7 +506,11 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     // this is likely a fennec library; we pulled it just into sFennecLibsPrefix
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
-                    lib = sFennecLibsPrefix + "/" + libBaseName;
+                    if (!androidHWID) {
+                        lib = sFennecLibsPrefix + "/" + libBaseName;
+                    } else {
+                        lib = sFennecLibsPrefix + "/" + androidHWID + "/" + libBaseName;
+                    }
                 } else {
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
