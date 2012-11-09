@@ -109,6 +109,9 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    document.getElementById("specialOptions").style.display = (val.profilerTargetDescription == "Local") ?
+                                                              "" : "none";
+
     document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
