@@ -387,24 +387,37 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     stackAddresses.sort();
 
-    // Drop memory modules not referenced by the stack
+    // Drop memory modules not referenced by the stack and compute offsets.
     var memoryMap = [];
-    for (var libIndex = 0; libIndex < sharedLibraries.length; ++libIndex) {
-        var lib = sharedLibraries[libIndex];
-	for (var pcIndex = 0; pcIndex < stackAddresses.length; ++pcIndex) {
-	    var pc = parseInt(stackAddresses[pcIndex], 16);
-	    if (lib.start <= pc && pc < lib.end) {
-                var libSize = lib.end - lib.start;
-                var module = [lib.start, lib.name, libSize, lib.pdbAge, lib.pdbSignature, lib.pdbName];
-                memoryMap.push(module);
+    let processedStack = [];
+    let moduleToModuleIndex = {}
 
-		// We found a PC entry for this library, so no need to look at more PCs
-		break;
-            }
-	}
+    for (let pcIndex = 0; pcIndex < stackAddresses.length; ++pcIndex) {
+        let pc = parseInt(stackAddresses[pcIndex], 16);
+        // FIXME: the same lookup is done in assignSymbolsToLibraries for other platforms.
+        // It would be more efficient to have the c++ code always compute the offset for us.
+        let lib = getContainingLibrary(sharedLibraries, pc);
+        if (!lib) {
+            processedStack.push([-1, pc]);
+            continue;
+        }
+
+        let module = [lib.name, lib.pdbAge, lib.pdbSignature, lib.pdbName];
+        if (module in moduleToModuleIndex) {
+            moduleIndex = moduleToModuleIndex[module];
+        } else {
+            moduleIndex = memoryMap.push(module) - 1;
+            moduleToModuleIndex[module] = moduleIndex;
+        }
+
+        let offset = pc - lib.start;
+        processedStack.push([moduleIndex, offset]);
     }
+    // free
+    moduleToModuleIndex = null;
 
-    symbolicationRequest = [{ "stack": stackAddresses, "memoryMap": memoryMap }];
+    symbolicationRequest = { "stacks": [processedStack], "memoryMap": memoryMap,
+                             "version": 2 };
     var requestJson = JSON.stringify(symbolicationRequest);
 
     try {
