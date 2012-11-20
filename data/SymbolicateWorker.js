@@ -59,6 +59,10 @@ var symbolicate_onmessage = function (msg) {
       targetPlatform = msg.data.targetPlatform;
   }
 
+  var finishCallback = function (result) {
+      postSymbolicatedProfile(id, profile, result);
+  };
+
   if (typeof profile === "string" && profile.charAt(0) === "{") {
     dump("Text profile starting with '{', parsing as JSON (" + profile.length + " bytes)\n");
     try {
