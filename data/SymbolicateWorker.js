@@ -61,7 +61,12 @@ var symbolicate_onmessage = function (msg) {
 
   if (typeof profile === "string" && profile.charAt(0) === "{") {
     dump("Text profile starting with '{', parsing as JSON (" + profile.length + " bytes)\n");
-    profile = JSON.parse(profile);
+    try {
+      profile = JSON.parse(profile);
+    } catch (e) {
+      finishCallback( { "error": "Failed to parse profile: " + e.message } );
+      return;
+    }
     dump("Parsed\n");
 
     if (!sharedLibraries && profile.libs) {
