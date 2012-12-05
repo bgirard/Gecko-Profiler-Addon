@@ -26,9 +26,15 @@
     </div>
     <div class="targetPanel" id="divTypeAdbConfig" style="display:none">
       Port: <input id="adbPort" value="6000" style="width:100px;"></input><br>
-      Libs: <input id="adbLibCache" value="..." style="width:100px;"></input>
+
+      System libs: <input id="systemLibCache" value="..." style="width:100px;"></input>
       <button id="btnALibBrowse" type="button" >Browse</button><br>
-      If you have jimdb installed, point to &lt;jimdb&gt;/lib<br>
+      Where to look for/pull system libs to.  If you have jimdb installed, point to &lt;jimdb&gt;/lib<br>
+
+      Fennec libs: <input id="fennecLibCache" value="..." style="width:100px;"></input>
+      <button id="btnFLibBrowse" type="button" >Browse</button><br>
+      Where to look for/unpack fennec libs to.<br>
+
       <br>
       <br>
       <a id="adbStatus"></a><br>
