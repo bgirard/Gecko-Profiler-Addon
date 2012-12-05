@@ -3,12 +3,36 @@
   <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <style type="text/css">
-  html, body {
-    padding: 0;
-    margin: 0;
-  }
-  canvas {
-  }
+html, body {
+  padding: 2px;
+  margin: 0;
+}
+
+body {
+  font-family: -moz-dialog, sans-serif;
+}
+
+.info {
+  font-size: 60%;
+  padding-left: 1em;
+}
+
+.info > tt {
+  font-size: 120%;
+}
+
+.status {
+  min-height: 2em;
+  min-width: 2em;
+}
+
+canvas {
+}
+
+table {
+  margin: 0;
+}
+
   </style>
   </head>
   <body>
@@ -18,27 +42,38 @@
       <option value="tcp">TCP</option>
       <option value="adb">Mobile USB</option>
     </select><br>
+
     <div class="targetPanel" id="divTypeTcpConnect" style="display:none">
       Host: <input id="tcpHostname" value="localhost" style="width:100px;"></input><br>
       Port: <input id="tcpPort" value="6000" style="width:100px;"></input><br>
       <button id="btnTcpConnect" type="button" style="left: 150px;">Connect</button><br>
       <a id="tcpStatus"></a>
     </div>
+
     <div class="targetPanel" id="divTypeAdbConfig" style="display:none">
-      Port: <input id="adbPort" value="6000" style="width:100px;"></input><br>
+      <table width="100%">
+	<tr><td>
+	    Port: <input id="adbPort" value="16000" style="width:100px;"></input><br>
+	    <div class="info">Local port to use.  It will be forwarded to your device's port 6000.</div>
+	</td></tr>
 
-      System libs: <input id="systemLibCache" value="..." style="width:100px;"></input>
-      <button id="btnALibBrowse" type="button" >Browse</button><br>
-      Where to look for/pull system libs to.  If you have jimdb installed, point to &lt;jimdb&gt;/lib<br>
+	<tr><td>
+	    System libs: <input id="systemLibCache" value="..." style="width:100px;"></input>
+	    <button id="btnALibBrowse" type="button">Browse</button><br>
+	    <div class="info">Where to look for/pull system libs to.  If you have jimdb installed, point to &lt;jimdb&gt;/lib</div>
+	</td></tr>
 
-      Fennec libs: <input id="fennecLibCache" value="..." style="width:100px;"></input>
-      <button id="btnFLibBrowse" type="button" >Browse</button><br>
-      Where to look for/unpack fennec libs to.<br>
+	<tr><td>
+	    Fennec libs: <input id="fennecLibCache" value="..." style="width:100px;"></input>
+	    <button id="btnFLibBrowse" type="button">Browse</button><br>
+	    <div class="info">Where to look for/unpack Fennec libs to.</div>
+	</td></tr>
 
-      <br>
-      <br>
-      <a id="adbStatus"></a><br>
-      <button id="btnAdbConnect" type="button" style="left: 150px;">Connect</button><br>
+	<tr><td>&nbsp;</td></tr>
+
+	<tr><td><div id="adbStatus" class="status"></div></td></tr>
+	<tr><td><button id="btnAdbConnect" type="button" style="left: 150px;">Connect</button></td></tr>
+      </table>
     </div>
     <div class="targetPanel" id="divTypeLog" style="display:none">
       <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
