@@ -53,8 +53,9 @@ table {
     <div class="targetPanel" id="divTypeAdbConfig" style="display:none">
       <table width="100%">
 	<tr><td>
-	    Port: <input id="adbPort" value="16000" style="width:100px;"></input><br>
-	    <div class="info">Local port to use.  It will be forwarded to your device's port 6000.</div>
+	    Ports &mdash; Local: <input id="adbPort" value="16000" style="width: 50px;"></input>
+	    Remote: <input id="debugPort" value="6000" style="width: 50px;"></input><br>
+	    <div class="info">Ports to use. The local port will be forwarded to the remote via adb.</div>
 	</td></tr>
 
 	<tr><td>

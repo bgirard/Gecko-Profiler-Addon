@@ -173,6 +173,7 @@ function adbConnect() {
         systemLibCache: document.getElementById("systemLibCache").value,
         fennecLibCache: document.getElementById("fennecLibCache").value,
         port: document.getElementById("adbPort").value,
+        remotePort: document.getElementById("debugPort").value,
     };
     document.getElementById("adbStatus").innerHTML = "Connecting via adb on port " + options.port + ".";
     self.port.emit("adbconnect", options);
