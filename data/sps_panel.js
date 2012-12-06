@@ -115,7 +115,8 @@ self.port.on("change_status", function(val) {
     document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
     //document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
-    document.getElementById("adbLibCache").value = val.adbLibCache;
+    document.getElementById("systemLibCache").value = val.systemLibCache;
+    document.getElementById("fennecLibCache").value = val.fennecLibCache;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
@@ -169,8 +170,10 @@ function bugzilla_file_bug() {
 
 function adbConnect() {
     var options = {
-        adbLibCache: document.getElementById("adbLibCache").value,
+        systemLibCache: document.getElementById("systemLibCache").value,
+        fennecLibCache: document.getElementById("fennecLibCache").value,
         port: document.getElementById("adbPort").value,
+        remotePort: document.getElementById("debugPort").value,
     };
     document.getElementById("adbStatus").innerHTML = "Connecting via adb on port " + options.port + ".";
     self.port.emit("adbconnect", options);
@@ -222,10 +225,15 @@ function open_settings() {
 }
 document.getElementById("btnSettings").onclick = open_settings;
 
-function browse_lib_folder() {
-    self.port.emit("browselibfolder", document.getElementById("adbLibCache"));
+function browse_system_lib_folder() {
+    self.port.emit("browselibfolder", document.getElementById("systemLibCache"));
 }
-document.getElementById("btnALibBrowse").onclick = browse_lib_folder;
+document.getElementById("btnALibBrowse").onclick = browse_system_lib_folder;
+
+function browse_fennec_lib_folder() {
+    self.port.emit("browselibfolder", document.getElementById("fennecLibCache"));
+}
+document.getElementById("btnFLibBrowse").onclick = browse_fennec_lib_folder;
 
 function select_target_change() {
     var value = document.getElementById("selectTarget").value;
