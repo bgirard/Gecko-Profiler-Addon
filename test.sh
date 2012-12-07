@@ -43,4 +43,4 @@ then
 fi
 
 # or use nightly
-cfx run --binary /Applications/Nightly.app
+cfx run --binary /Applications/FirefoxNightly.app
