@@ -43,12 +43,6 @@ then
 fi
 
 # or use nightly
-if [ -e /Applications/FirefoxNightly.app ]
-then
-  cfx run --binary /Applications/FirefoxNightly.app
-  exit
-fi
-
 if [ -e /Applications/Nightly.app ]
 then
   cfx run --binary /Applications/Nightly.app
