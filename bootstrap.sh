@@ -5,7 +5,7 @@ hash git 2> /dev/null || {
 
 git clone https://github.com/mozilla/addon-sdk sdk
 cd sdk
-git checkout 1.10
+git checkout 1.12
 cd packages
 git clone https://github.com/erikvold/vold-utils-jplib
 git clone https://github.com/erikvold/xulkeys-jplib
