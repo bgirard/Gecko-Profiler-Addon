@@ -20,13 +20,13 @@ In order to install this add-on, you need a copy of the add-on SDK.  Please do t
 
 1. `cd /path/to/Gecko-Profiler-Addon`
 2. `git clone https://github.com/mozilla/addon-sdk sdk && cd sdk`
-2. `git checkout 1.12` (the latest SDK version)
-3. `cd packages`
+   `git checkout 1.12` (the latest SDK version)
+   `cd ..`
+3. `mkdir packages && cd packages`
    `git clone https://github.com/erikvold/vold-utils-jplib`
    `git clone https://github.com/erikvold/xulkeys-jplib`
    `git clone https://github.com/voldsoftware/toolbarbutton-jplib.git`
    `cd ..`
-4. `. bin/activate`
-5. `cd ..`
-6. `cfx xpi`
+4. `cd sdk && . bin/activate && cd ..`
+5. `cfx xpi`
 
