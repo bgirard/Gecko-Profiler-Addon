@@ -411,7 +411,17 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
             continue;
         }
 
-        let module = [lib.name, lib.pdbAge, lib.pdbSignature, lib.pdbName];
+        let breakpadId;
+        let name;
+        if ('breakpadId' in lib) {
+           name = lib.name;
+           breakpadId = lib.breakpadId;
+        } else {
+           name = lib.pdbName;
+           let pdbSig = lib.pdbSignature.replace(/[{}-]/g, "").toUpperCase();
+           breakpadId = pdbSig + lib.pdbAge;
+        }
+        let module = [name, breakpadId];
         if (module in moduleToModuleIndex) {
             moduleIndex = moduleToModuleIndex[module];
         } else {
@@ -426,7 +436,7 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
     moduleToModuleIndex = null;
 
     symbolicationRequest = { "stacks": [processedStack], "memoryMap": memoryMap,
-                             "version": 2 };
+                             "version": 3 };
     var requestJson = JSON.stringify(symbolicationRequest);
 
     try {
