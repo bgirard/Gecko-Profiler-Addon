@@ -111,6 +111,8 @@ self.port.on("change_status", function(val) {
 
     document.getElementById("specialOptions").style.display = (val.profilerTargetDescription == "Local") ?
                                                               "" : "none";
+    document.getElementById("btnScreencast").style.display = (val.hasScreencast) ?
+                                                              "" : "none";
 
     document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
@@ -195,6 +197,10 @@ function sps_restart() {
     self.port.emit("restart");
 }
 document.getElementById("btnRestart").onclick = sps_restart;
+function sps_screencast() {
+    self.port.emit("screencast");
+}
+document.getElementById("btnScreencast").onclick = sps_screencast;
 function sps_save() {
     self.port.emit("getprofile", "test");   
 }
