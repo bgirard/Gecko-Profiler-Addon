@@ -48,7 +48,7 @@ var featureDescription = {
   "jank" : "Only record samples when the application is not responding. Useful for collecting the source of hangs over a large timespan.",
   "adb" : "Profile debug version of fennec, this will not work on nightlies. Install 'adb' on your path, and connect a device via usb debugging.",
   "sampling" : "Adjust frequency of sampling and sample buffer size by choosing a preset or entering custom values:",
-  "watchdog" : "Opt-in to background performance monitoring. The profiler will watch startup/shutdown and navigation and will look for interesting profiles such as slow shutdown and will send in a detailed execution trace.<br><br><B>PRIVACY WARNGING:</b> Profiles will be sent automactially in the background. This is a major privacy concern and thus is on a volunteer basis only."
+  "performanceReporter" : "Opt-in to background performance monitoring. The profiler will watch startup/shutdown and navigation and will look for interesting profiles such as slow shutdown and will send in a detailed execution trace.<br><br><B>PRIVACY WARNGING:</b> Profiles will be sent automactially in the background. This is a major privacy concern and thus is on a volunteer basis only."
 };
 
 var rowCount = 0;
@@ -209,7 +209,7 @@ function selectTabAdvanced(mainAreaDiv) {
   rowCount = 0;
 
   var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Fennec profiling", "adb", "");
-  var feature_watchdog = addFeatureDiv(mainAreaDiv, "Profiler Watchdog", "watchdog", "The watchdog is a feature that will profile your browser during start/shutdown and navigation and send in any profiles deemed interesting automatically.");
+  var feature_watchdog = addFeatureDiv(mainAreaDiv, "Performance Reporter", "performanceReporter", "The performance reporter is a feature that will profile your browser during start/shutdown and navigation and send in any profiles deemed interesting automatically.");
   var sampling_settings = addSamplingSettingsDiv(mainAreaDiv, "sampling", "Adjust how sampling is done");
 }
 

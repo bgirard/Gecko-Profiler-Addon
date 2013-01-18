@@ -38,6 +38,7 @@ fi
 
 if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
+  echo Nightly
   cfx run --binary /Volumes/Nightly/FirefoxNightly.app
   exit
 fi
@@ -45,6 +46,7 @@ fi
 # or use nightly
 if [ -e /Applications/Nightly.app ]
 then
+  echo Nightly
   cfx run --binary /Applications/Nightly.app
   exit
 fi
