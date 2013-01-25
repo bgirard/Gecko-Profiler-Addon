@@ -73,9 +73,9 @@ var symbolicate_onmessage = function (msg) {
     }
     dump("Parsed\n");
 
-    if (!sharedLibraries && profile.libs) {
+    if (profile.libs) {
       sharedLibraries = JSON.parse(profile.libs);
-      dump("Extract shared library from profile\n");
+      dump("Extracted shared library from profile\n");
     }
   }
 
