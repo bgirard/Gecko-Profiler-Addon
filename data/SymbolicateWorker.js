@@ -59,14 +59,23 @@ var symbolicate_onmessage = function (msg) {
       targetPlatform = msg.data.targetPlatform;
   }
 
+  var finishCallback = function (result) {
+      postSymbolicatedProfile(id, profile, result);
+  };
+
   if (typeof profile === "string" && profile.charAt(0) === "{") {
     dump("Text profile starting with '{', parsing as JSON (" + profile.length + " bytes)\n");
-    profile = JSON.parse(profile);
+    try {
+      profile = JSON.parse(profile);
+    } catch (e) {
+      finishCallback( { "error": "Failed to parse profile: " + e.message } );
+      return;
+    }
     dump("Parsed\n");
 
-    if (!sharedLibraries && profile.libs) {
+    if (profile.libs) {
       sharedLibraries = JSON.parse(profile.libs);
-      dump("Extract shared library from profile\n");
+      dump("Extracted shared library from profile\n");
     }
   }
 
@@ -244,6 +253,10 @@ function resolveJSDocumentsJSON(reporter, profile) {
     var documentsToFetch = Object.keys(addresses);
     for (var i = 0; i < documentsToFetch.length; i++) {
         var documentToFetch = documentsToFetch[i];
+        // XXX Bug 785507 causes a invalid URL to throw an uncatchable error :(
+        //     for now we skip any non http document.
+        if (documentToFetch.indexOf("http") != 0)
+          continue;
         dump("Fetch: " + documentToFetch + "\n");
         try {
             var uri = documentToFetch;
@@ -358,12 +371,7 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
         });
         totalProgressReporter.begin("Symbolicating profile...");
         var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
-        if (platform != "Android") {
-          // Bug 785507 means that when we try to fetch some local files that don't exist
-          // we throw an exception we can't catch thus we freeze here. For now don't support
-          // this if we're doing remote profiling.
-          resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
-        }
+        resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
         dump("Resolve symbol\n");
@@ -388,24 +396,47 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     stackAddresses.sort();
 
-    // Drop memory modules not referenced by the stack
+    // Drop memory modules not referenced by the stack and compute offsets.
     var memoryMap = [];
-    for (var libIndex = 0; libIndex < sharedLibraries.length; ++libIndex) {
-        var lib = sharedLibraries[libIndex];
-	for (var pcIndex = 0; pcIndex < stackAddresses.length; ++pcIndex) {
-	    var pc = parseInt(stackAddresses[pcIndex], 16);
-	    if (lib.start <= pc && pc < lib.end) {
-                var libSize = lib.end - lib.start;
-                var module = [lib.start, lib.name, libSize, lib.pdbAge, lib.pdbSignature, lib.pdbName];
-                memoryMap.push(module);
+    let processedStack = [];
+    let moduleToModuleIndex = {}
 
-		// We found a PC entry for this library, so no need to look at more PCs
-		break;
-            }
-	}
+    for (let pcIndex = 0; pcIndex < stackAddresses.length; ++pcIndex) {
+        let pc = parseInt(stackAddresses[pcIndex], 16);
+        // FIXME: the same lookup is done in assignSymbolsToLibraries for other platforms.
+        // It would be more efficient to have the c++ code always compute the offset for us.
+        let lib = getContainingLibrary(sharedLibraries, pc);
+        if (!lib) {
+            processedStack.push([-1, pc]);
+            continue;
+        }
+
+        let breakpadId;
+        let name;
+        if ('breakpadId' in lib) {
+           name = lib.name;
+           breakpadId = lib.breakpadId;
+        } else {
+           name = lib.pdbName;
+           let pdbSig = lib.pdbSignature.replace(/[{}-]/g, "").toUpperCase();
+           breakpadId = pdbSig + lib.pdbAge;
+        }
+        let module = [name, breakpadId];
+        if (module in moduleToModuleIndex) {
+            moduleIndex = moduleToModuleIndex[module];
+        } else {
+            moduleIndex = memoryMap.push(module) - 1;
+            moduleToModuleIndex[module] = moduleIndex;
+        }
+
+        let offset = pc - lib.start;
+        processedStack.push([moduleIndex, offset]);
     }
+    // free
+    moduleToModuleIndex = null;
 
-    symbolicationRequest = [{ "stack": stackAddresses, "memoryMap": memoryMap }];
+    symbolicationRequest = { "stacks": [processedStack], "memoryMap": memoryMap,
+                             "version": 3 };
     var requestJson = JSON.stringify(symbolicationRequest);
 
     try {
@@ -502,7 +533,11 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     // this is likely a fennec library; we pulled it just into sFennecLibsPrefix
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];
-                    lib = sFennecLibsPrefix + "/" + libBaseName;
+                    if (!androidHWID) {
+                        lib = sFennecLibsPrefix + "/" + libBaseName;
+                    } else {
+                        lib = sFennecLibsPrefix + "/" + androidHWID + "/" + libBaseName;
+                    }
                 } else {
                     var libBaseName = library.name.split("/");
                     libBaseName = libBaseName[libBaseName.length - 1];

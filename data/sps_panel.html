@@ -1,33 +1,106 @@
 <!DOCTYPE html>
 <html>
   <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <style type="text/css">
-  html, body {
-    padding: 0;
-    margin: 0;
-  }
-  canvas {
-  }
+html, body {
+  padding: 2px;
+  margin: 0;
+}
+
+body {
+  font-family: -moz-dialog, sans-serif;
+}
+
+.info {
+  font-size: 60%;
+  padding-left: 1em;
+}
+
+.info > tt {
+  font-size: 120%;
+}
+
+.status {
+  min-height: 2em;
+  min-width: 2em;
+}
+
+canvas {
+}
+
+table {
+  margin: 0;
+}
+
   </style>
   </head>
   <body>
-    Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
-    Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
-    <button id="btnRestart" type="button">Profile Startup</button><br>
-    <div id="divAdb">
-      Mobile:
-      <button id="btnStart" type="button">Start</button>
-      <button id="btnAdb" type="button">Pull</button>
-      <button id="btnAdbOnlyProfile" type="button">Pull (Profile Only)</button>
-      <button id="btnAdbLibs" type="button">Get Libs</button><br>
-      <button id="btnPackage" type="button">Import Package</button><br>
+    Target: 
+    <select id="selectTarget">
+      <option value="local">Local</option>
+      <option value="tcp">TCP</option>
+      <option value="adb">Mobile USB</option>
+    </select><br>
+
+    <div class="targetPanel" id="divTypeTcpConnect" style="display:none">
+      Host: <input id="tcpHostname" value="localhost" style="width:100px;"></input><br>
+      Port: <input id="tcpPort" value="6000" style="width:100px;"></input><br>
+      <button id="btnTcpConnect" type="button" style="left: 150px;">Connect</button><br>
+      <a id="tcpStatus"></a>
     </div>
-    Settings: <button id="btnSettings" type="button">Settings</button><br>
-    <!--Bugzilla: <button id="btnFileBug" type="button">File Bug</button>-->
-    <canvas id="responseGraph" width="120" height="60"></canvas><br>
-    <input id=chkJank type="checkbox" disabled="disabled"/> Jank-Only
-    <input id=chkStackwalk type="checkbox" disabled="disabled"/> Stackwalk<br>
-    <input id=chkJS type="checkbox" disabled="disabled"/> JS Profiling
-    <input id=chkGC type="checkbox"/> GC Stats
+
+    <div class="targetPanel" id="divTypeAdbConfig" style="display:none">
+      <table width="100%">
+	<tr><td>
+	    Ports &mdash; Local: <input id="adbPort" value="16000" style="width: 50px;"></input>
+	    Remote: <input id="debugPort" value="6000" style="width: 50px;"></input><br>
+	    <div class="info">Ports to use. The local port will be forwarded to the remote via adb.</div>
+	</td></tr>
+
+	<tr><td>
+	    System libs: <input id="systemLibCache" value="..." style="width:100px;"></input>
+	    <button id="btnALibBrowse" type="button">Browse</button><br>
+	    <div class="info">Where to look for/pull system libs to.  If you have jimdb installed, point to &lt;jimdb&gt;/lib</div>
+	</td></tr>
+
+	<tr><td>
+	    Fennec libs: <input id="fennecLibCache" value="..." style="width:100px;"></input>
+	    <button id="btnFLibBrowse" type="button">Browse</button><br>
+	    <div class="info">Where to look for/unpack Fennec libs to.</div>
+	</td></tr>
+
+	<tr><td>&nbsp;</td></tr>
+
+	<tr><td><div id="adbStatus" class="status"></div></td></tr>
+	<tr><td><button id="btnAdbConnect" type="button" style="left: 150px;">Connect</button></td></tr>
+      </table>
+    </div>
+    <div class="targetPanel" id="divTypeLog" style="display:none">
+      <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
+    </div>
+    <div class="targetPanel" id="divTypeControls">
+      Connected to: <a id="lblTargetDesc"></a><br>
+      Profiler: <button id="btnToggleActive" type="button">...</button> Ctrl+Shift+S<br>
+      Profile: <button id="btnSave" type="button">Analyze</button> Ctrl+Shift+O<br>
+      <a id="specialOptions" style="display:none">
+        Special: <button id="btnRestart" type="button">Firefox Restart</button><button id="btnScreencast" style="display:none" type="button">Screencast</button><br>
+      </a>
+      <div id="divAdb" style="display:none">
+        Mobile:
+        <button id="btnStart" type="button">Start</button>
+        <button id="btnAdb" type="button">Pull</button>
+        <button id="btnAdbOnlyProfile" type="button">Pull (Profile Only)</button>
+        <button id="btnAdbLibs" type="button">Get Libs</button><br>
+        <button id="btnPackage" type="button">Import Package</button><br>
+      </div>
+      Settings: <button id="btnSettings" type="button">Settings</button><br>
+      <!--Bugzilla: <button id="btnFileBug" type="button">File Bug</button>-->
+      <canvas id="responseGraph" width="120" height="60"></canvas><br>
+      <input id=chkJank type="checkbox" disabled="disabled"/> Jank-Only
+      <input id=chkStackwalk type="checkbox" disabled="disabled"/> Stackwalk<br>
+      <input id=chkJS type="checkbox" disabled="disabled"/> JS Profiling
+      <input id=chkGC type="checkbox"/> GC Stats
+    </div>
   </body>
 </html>

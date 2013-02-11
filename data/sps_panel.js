@@ -73,7 +73,7 @@ self.port.on("change_status", function(val) {
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
       chkJank.disabled = !has_feature("jank") || val.isActive;
-      chkJank.checked = has_feature_active("jank");
+      chkJank.checked = val.isActive ? has_feature_active("jank") : get_feature_pref("jank");
       chkJank.onclick = function() {
         self.port.emit("set_feature", {feature: "jank", value: chkJank.checked});
       }
@@ -85,7 +85,7 @@ self.port.on("change_status", function(val) {
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
-      chkStackwalk.checked = has_feature_active("stackwalk");
+      chkStackwalk.checked = val.isActive ? has_feature_active("stackwalk") : get_feature_pref("stackwalk");
       chkStackwalk.onclick = function() {
         self.port.emit("set_feature", {feature: "stackwalk", value: chkStackwalk.checked});
       }
@@ -94,7 +94,7 @@ self.port.on("change_status", function(val) {
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
-      chkJS.checked = has_feature_active("js");
+      chkJS.checked = val.isActive ? has_feature_active("js") : get_feature_pref("js");
       chkJS.onclick = function() {
         self.port.emit("set_feature", {feature: "js", value: chkJS.checked});
       }
@@ -102,28 +102,105 @@ self.port.on("change_status", function(val) {
 
     var chkGC = document.getElementById("chkGC");
     if (chkGC) {
-      chkGC.checked = has_feature_active("gc");
+      chkGC.disabled = !has_feature("gc") || val.isActive;
+      chkGC.checked = get_feature_pref("gc");
       chkGC.onclick = function() {
         self.port.emit("set_feature", {feature: "gc", value: chkGC.checked});
       }
     }
 
+    document.getElementById("specialOptions").style.display = (val.profilerTargetDescription == "Local") ?
+                                                              "" : "none";
+    document.getElementById("btnScreencast").style.display = (val.hasScreencast) ?
+                                                              "" : "none";
+
+    document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
-    document.getElementById("divAdb").style.visibility = get_feature_pref("adb") ? "" : "hidden";
+    //document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
+    document.getElementById("systemLibCache").value = val.systemLibCache;
+    document.getElementById("fennecLibCache").value = val.fennecLibCache;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
+var onShow = {
+  "TcpConnect": function() {
+    document.getElementById("tcpStatus").innerHTML = "";
+  },
+  "AdbConnect": function () {
+    document.getElementById("adbStatus").innerHTML = "";
+  }
+}
+
+function showPanel(name) {
+    // I'm not sure but sometimes getElementsByClassName doesn't
+    // always return the elements I expect.
+                 // Why is this needed?
+    //var panels = XPCNativeWrapper.unwrap(document.getElementsByClassName("targetPanel"));
+    //for (var i = 0; i < panels.length; i++) {
+    //    var elem = panels[i];
+    //    elem.style.display = "none";
+    //}
+    // Do this manually until we can figure out getElementsByClassName
+    document.getElementById("divTypeTcpConnect").style.display = "none";
+    document.getElementById("divTypeAdbConfig").style.display = "none";
+    document.getElementById("divTypeLog").style.display = "none";
+
+    document.getElementById("divTypeControls").style.display = "none";
+
+    document.getElementById("divType" + name).style.display = "";
+    if (onShow[name])
+      onShow[name]();
+}
+
+self.port.on("show_panel", function(val) {
+    showPanel(val);
+});
+
+self.port.on("show_log", function(val) {
+    showPanel("Log");
+    document.getElementById("TargetLog").value = val;
+});
+
+self.port.on("show_adb_status", function(val) {
+  document.getElementById("adbStatus").innerHTML = val;
+});
 
 function bugzilla_file_bug() {
     self.port.emit("filebug", "test");
 }
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
+function adbConnect() {
+    var options = {
+        systemLibCache: document.getElementById("systemLibCache").value,
+        fennecLibCache: document.getElementById("fennecLibCache").value,
+        port: document.getElementById("adbPort").value,
+        remotePort: document.getElementById("debugPort").value,
+    };
+    document.getElementById("adbStatus").innerHTML = "Connecting via adb on port " + options.port + ".";
+    self.port.emit("adbconnect", options);
+}
+
+document.getElementById("btnAdbConnect").onclick = adbConnect;
+
+function tcpConnect() {
+    var options = {
+        hostname: document.getElementById("tcpHostname").value,
+        port: document.getElementById("tcpPort").value,
+    };
+    document.getElementById("tcpStatus").innerHTML = "Connecting to " + options.hostname + ":" + options.port + ".";
+    self.port.emit("tcpconnect", options);
+}
+document.getElementById("btnTcpConnect").onclick = tcpConnect;
 
 function sps_restart() {
     self.port.emit("restart");
 }
 document.getElementById("btnRestart").onclick = sps_restart;
+function sps_screencast() {
+    self.port.emit("screencast");
+}
+document.getElementById("btnScreencast").onclick = sps_screencast;
 function sps_save() {
     self.port.emit("getprofile", "test");   
 }
@@ -154,17 +231,33 @@ function open_settings() {
 }
 document.getElementById("btnSettings").onclick = open_settings;
 
+function browse_system_lib_folder() {
+    self.port.emit("browselibfolder", document.getElementById("systemLibCache"));
+}
+document.getElementById("btnALibBrowse").onclick = browse_system_lib_folder;
+
+function browse_fennec_lib_folder() {
+    self.port.emit("browselibfolder", document.getElementById("fennecLibCache"));
+}
+document.getElementById("btnFLibBrowse").onclick = browse_fennec_lib_folder;
+
+function select_target_change() {
+    var value = document.getElementById("selectTarget").value;
+    self.port.emit("changetarget", value);
+}
+document.getElementById("selectTarget").onchange = select_target_change;
+
 self.port.on("getprofile", function(val) {
     document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;
 });
 
 self.port.on("responsive", function(val) {
-  let canvas = document.getElementById("responseGraph");
-  var ctx = canvas.getContext("2d");
-  ctx.lineWidth = 1;
-  reset(ctx, canvas);
-  drawGraph(ctx, val, 5, 5, 100, 50);
-  drawAxis(ctx, 5, 5, 100, 50);
+    let canvas = document.getElementById("responseGraph");
+    var ctx = canvas.getContext("2d");
+    ctx.lineWidth = 1;
+    reset(ctx, canvas);
+    drawGraph(ctx, val, 5, 5, 100, 50);
+    drawAxis(ctx, 5, 5, 100, 50);
 });
 
 // Plot sizes

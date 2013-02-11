@@ -45,7 +45,8 @@ function symbolicate(profile, targetPlatform, sharedLibraries, progressCallback,
     if (msg.data.id == id) {
       switch (msg.data.type) {
         case "progress":
-          progressCallback(msg.data);
+          if (progressCallback)
+            progressCallback(msg.data);
           break;
         case "finished":
           worker.removeEventListener("message", workerSentMessage);

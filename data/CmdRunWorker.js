@@ -59,7 +59,7 @@ self.onmessage = function (msg) {
 
   var cmd = msg.data.cmd;
   if (msg.data.type === "runCommand") {
-    var result = runCommandWorker(cmd);
+    var result = runCommandWorker(cmd, msg.data.isProgressive);
     self.postMessage({ cmd: cmd, result: result });
   } else if (msg.data.type === "platform") {
     // do nothing
@@ -76,7 +76,7 @@ function exec(cmd) {
     return "";
 }
 
-function runCommandWorker(cmd) {
+function runCommandWorker(cmd, isProgressiveResult) {
     var file = popen(cmd, "r")
     
     const bufferSize = 1000;
@@ -86,7 +86,11 @@ function runCommandWorker(cmd) {
     while (size == bufferSize) {
         size = fread(buffer, 1, bufferSize, file);
         try {
-            outList.push(buffer.readString().substring(0, size));
+            if (isProgressiveResult) {
+                self.postMessage({ cmd: cmd, progress: buffer.readString().substring(0, size) });
+            } else {
+                outList.push(buffer.readString().substring(0, size));
+            }
         } catch (e) {
             //dump("Exception reading line, ignoring characters.\n");
         }

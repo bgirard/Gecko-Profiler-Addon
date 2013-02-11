@@ -38,9 +38,18 @@ fi
 
 if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
+  echo Nightly
   cfx run --binary /Volumes/Nightly/FirefoxNightly.app
   exit
 fi
 
 # or use nightly
-cfx run --binary /Applications/FirefoxNightly.app
+if [ -e /Applications/Nightly.app ]
+then
+  echo Nightly
+  cfx run --binary /Applications/Nightly.app
+  exit
+fi
+
+echo "Unable to find a firefox installation!"
+exit 1
