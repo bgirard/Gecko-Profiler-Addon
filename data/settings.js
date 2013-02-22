@@ -44,11 +44,11 @@ function select_tab(tabId) {
 }
 
 var featureDescription = {
-  "stackwalk" : "Enable stackwalking in <a href='http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-profiling/'>profiling-nightly</a> or custom profiling builds. Custom builds should specify: 'ac_add_options --enable-profiling'",
+  "stackwalk" : "Enable stackwalking in a nightly or custom profiling builds. Custom builds should specify: 'ac_add_options --enable-profiling'",
   "jank" : "Only record samples when the application is not responding. Useful for collecting the source of hangs over a large timespan.",
   "adb" : "Profile debug version of fennec, this will not work on nightlies. Install 'adb' on your path, and connect a device via usb debugging.",
   "sampling" : "Adjust frequency of sampling and sample buffer size by choosing a preset or entering custom values:",
-  "performanceReporter" : "Opt-in to background performance monitoring. The profiler will watch startup/shutdown and navigation and will look for interesting profiles such as slow shutdown and will send in a detailed execution trace.<br><br><B>PRIVACY WARNGING:</b> Profiles will be sent automactially in the background. This is a major privacy concern and thus is on a volunteer basis only."
+  "performanceReporter" : "Opt-in to background performance monitoring. The profiler will watch startup/shutdown and navigation and will look for interesting profiles such as slow shutdown and will send in a detailed execution trace.\n\nPRIVACY WARNGING: Profiles will be sent automactially in the background. This is a major privacy concern and thus is on a volunteer basis only."
 };
 
 var rowCount = 0;
@@ -63,7 +63,7 @@ function addFeatureDiv(div, name, featureName, desc) {
   rowCount++;
   feature.onmouseover = function() {
     var infoBarDiv = document.getElementById("infobar");
-    infoBarDiv.innerHTML = desc;
+    infoBarDiv.textContent = desc;
   };
   
   var featureCheckbox = document.createElement("input");
@@ -77,7 +77,7 @@ function addFeatureDiv(div, name, featureName, desc) {
   feature.appendChild(document.createElement("br"));
   var featureDescriptionNode = document.createElement("text");
   feature.appendChild(featureDescriptionNode);
-  featureDescriptionNode.innerHTML = caption;
+  featureDescriptionNode.textContent = caption;
 
   featureCheckbox.onclick = function() {
     self.port.emit("set_feature", {feature:featureName, value:featureCheckbox.checked});
@@ -122,7 +122,7 @@ function addSamplingSettingsDiv(div, featureName, desc) {
   rowCount++;
   feature.onmouseover = function() {
     var infoBarDiv = document.getElementById("infobar");
-    infoBarDiv.innerHTML = desc;
+    infoBarDiv.textContent = desc;
   };
 
   feature.appendChild(document.createTextNode(caption));
@@ -169,7 +169,7 @@ function addSamplingSettingsDiv(div, featureName, desc) {
 
   var submitButton = document.createElement("button");
   submitButton.type = "button";
-  submitButton.innerHTML = "Set values";
+  submitButton.textContent = "Set values";
   submitButton.onclick = function() {
     var samplingInterval = parseInt(intervalField.value);
     var sampleBufferSize = parseInt(entriesField.value);

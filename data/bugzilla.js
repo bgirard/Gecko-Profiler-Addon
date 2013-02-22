@@ -37,7 +37,7 @@ function init() {
     
     document.getElementById("short_desc").value = "[SPS] ";
     document.getElementById("status_whiteboard").value = "[SPS]";
-    document.getElementById("comment").innerHTML = "URL";
+    document.getElementById("comment").textContent = "URL";
     document.getElementById("short_desc").focus();
     
     self.port.emit("getaboutsupport", "test");
@@ -59,7 +59,7 @@ self.port.on("getaboutsupport", function(data) {
     commentStr += "Profile: \n" + url + "\n\n";
     commentStr += "Build info:\n" + buildInfo + "\n";
 
-    document.getElementById("comment").innerHTML = commentStr;
+    document.getElementById("comment").textContent = commentStr;
 });
 
 init();

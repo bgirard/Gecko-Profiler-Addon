@@ -114,11 +114,11 @@ self.port.on("change_status", function(val) {
     document.getElementById("btnScreencast").style.display = (val.hasScreencast) ?
                                                               "" : "none";
 
-    document.getElementById("lblTargetDesc").innerHTML = val.profilerTargetDescription;
-    document.getElementById("btnToggleActive").innerHTML = val.runningLabel;
+    document.getElementById("lblTargetDesc").textContent = val.profilerTargetDescription;
+    document.getElementById("btnToggleActive").textContent = val.runningLabel;
     //document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
-    document.getElementById("systemLibCache").value = val.systemLibCache;
-    document.getElementById("fennecLibCache").value = val.fennecLibCache;
+    document.getElementById("systemLibCache").textContent = val.systemLibCache;
+    document.getElementById("fennecLibCache").textContent = val.fennecLibCache;
 });
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
@@ -162,7 +162,7 @@ self.port.on("show_log", function(val) {
 });
 
 self.port.on("show_adb_status", function(val) {
-  document.getElementById("adbStatus").innerHTML = val;
+  document.getElementById("adbStatus").textContent = val;
 });
 
 function bugzilla_file_bug() {
@@ -177,7 +177,7 @@ function adbConnect() {
         port: document.getElementById("adbPort").value,
         remotePort: document.getElementById("debugPort").value,
     };
-    document.getElementById("adbStatus").innerHTML = "Connecting via adb on port " + options.port + ".";
+    document.getElementById("adbStatus").textContent = "Connecting via adb on port " + options.port + ".";
     self.port.emit("adbconnect", options);
 }
 
@@ -188,7 +188,7 @@ function tcpConnect() {
         hostname: document.getElementById("tcpHostname").value,
         port: document.getElementById("tcpPort").value,
     };
-    document.getElementById("tcpStatus").innerHTML = "Connecting to " + options.hostname + ":" + options.port + ".";
+    document.getElementById("tcpStatus").textContent = "Connecting to " + options.hostname + ":" + options.port + ".";
     self.port.emit("tcpconnect", options);
 }
 document.getElementById("btnTcpConnect").onclick = tcpConnect;
@@ -248,7 +248,7 @@ function select_target_change() {
 document.getElementById("selectTarget").onchange = select_target_change;
 
 self.port.on("getprofile", function(val) {
-    document.getElementById("btnToggleActive").innerHTML = "Profile: " + val;
+    document.getElementById("btnToggleActive").textContent = "Profile: " + val;
 });
 
 self.port.on("responsive", function(val) {
