@@ -20,7 +20,7 @@ In order to install this add-on, you need a copy of the add-on SDK.  Please do t
 
 1. `cd /path/to/Gecko-Profiler-Addon`
 2. `git clone https://github.com/mozilla/addon-sdk sdk && cd sdk`
-   `git checkout 1.12` (the latest SDK version)
+   `git checkout 1.13.2` (the latest SDK version)
    `cd ..`
 3. `mkdir packages && cd packages`
    `git clone https://github.com/erikvold/vold-utils-jplib`
