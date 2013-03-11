@@ -26,9 +26,11 @@ function getWorker() {
     sWorker = new ChromeWorker("SymbolicateWorker.js");
     var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
     var abi = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).XPCOMABI;
+    var appName = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo).name;
     sWorker.postMessage({
         platform: hh["platform"],
         abi: abi,
+        appName: appName,
         androidLibsPrefix: getPref("androidLibsHostPath", "/tmp"),
         fennecLibsPrefix: getPref("fennecLibsHostPath", "/tmp")
     });
