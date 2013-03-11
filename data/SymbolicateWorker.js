@@ -17,10 +17,11 @@ var dropFrames =
 var sCmdWorker = null;
 var sPlatform = "";
 var sAbi = "";
+var sAppName = "";
 var sAndroidLibsPrefix = "/tmp";
 var sFennecLibsPrefix = "/tmp";
 
-function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) {
+function init_symbol_worker(platform, abi, appName, androidLibsPrefix, fennecLibsPrefix) {
     if (platform == "X11") {
         platform = "Linux";
     }
@@ -28,6 +29,7 @@ function init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix) 
     sCmdWorker = new ChromeWorker("CmdRunWorker.js");
     sCmdWorker.postMessage({type: "platform", cmd: platform});
     sAbi = abi;
+    sAppName = appName;
     sAndroidLibsPrefix = androidLibsPrefix;
     sFennecLibsPrefix = fennecLibsPrefix;
 }
@@ -36,9 +38,9 @@ var inited = false;
 
 var symbolicate_onmessage = function (msg) {
   if (!inited) {
-    var { platform, abi, androidLibsPrefix, fennecLibsPrefix } = msg.data;
+    var { platform, abi, appName, androidLibsPrefix, fennecLibsPrefix } = msg.data;
     try {
-      init_symbol_worker(platform, abi, androidLibsPrefix, fennecLibsPrefix);
+      init_symbol_worker(platform, abi, appName, androidLibsPrefix, fennecLibsPrefix);
     } catch (e) {
       dump("platform: " + platform + "\n");
       // If this doesn't work then fall back to call commands directly
@@ -436,7 +438,7 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
     moduleToModuleIndex = null;
 
     symbolicationRequest = { "stacks": [processedStack], "memoryMap": memoryMap,
-                             "version": 3 };
+                             "version": 3, "osName": sPlatform, "appName": sAppName };
     var requestJson = JSON.stringify(symbolicationRequest);
 
     try {
