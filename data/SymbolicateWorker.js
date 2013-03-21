@@ -36,6 +36,16 @@ function init_symbol_worker(platform, abi, appName, androidLibsPrefix, fennecLib
 
 var inited = false;
 
+function sortSharedLibraries(sharedLibraries) {
+    sharedLibraries.sort(function (a, b) { return a.start - b.start; });
+    // version convert older sharedLibraries formats
+    for (var i = 0; i < sharedLibraries.length; i++) {
+        if (sharedLibraries[i].offset == null) {
+            sharedLibraries[i].offset = 0;
+        }
+    }
+}
+
 var symbolicate_onmessage = function (msg) {
   if (!inited) {
     var { platform, abi, appName, androidLibsPrefix, fennecLibsPrefix } = msg.data;
@@ -82,13 +92,7 @@ var symbolicate_onmessage = function (msg) {
   }
 
   if (sharedLibraries != null) {
-      sharedLibraries.sort(function (a, b) { return a.start - b.start; });
-      // version convert older sharedLibraries formats
-      for (var i = 0; i < sharedLibraries.length; i++) {
-          if (sharedLibraries[i].offset == null) {
-              sharedLibraries[i].offset = 0;
-          }
-      }
+    sortSharedLibraries(sharedLibraries);
   }
 
   if (sPlatform == "Macintosh" || sPlatform == "Linux" || sPlatform == "Android") {
@@ -190,14 +194,45 @@ function findSymbolsToResolve(reporter, lines) {
     return Object.keys(addresses);
 }
 
-function findSymbolsToResolveJSON(reporter, profile) {
+function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
     reporter.begin("Gathering unresolved symbols...");
     var addresses = {};
     if (!profile.threads) {
       return Object.keys(addresses);
     }
+    var prefix = 1;
     for (var i = 0; i < profile.threads.length; i++) {
         var thread = profile.threads[i];
+        if (typeof profile.threads[i] == "string") {
+          var subProfile = JSON.parse(profile.threads[i]);
+          profile.threads[i] = subProfile;
+          // If we parse the samples this may be a subprocess profile we need to merge in
+          if (profile.threads[i].threads != null) {
+            profile.threads[i] = profile.threads[i].threads[0];
+            thread = profile.threads[i];
+            for (sampleId in profile.threads[i].samples) {
+              var sample = profile.threads[i].samples[sampleId];
+              for (frameId in sample.frames) {
+                if (sample.frames[frameId].location.startsWith("0x")) {
+                  sample.frames[frameId].location = prefix * parseInt("0x1000000000000", 16) + parseInt(sample.frames[frameId].location, 16);
+                  sample.frames[frameId].location = "0x" + sample.frames[frameId].location.toString(16);
+                }
+              }
+            }
+          }
+          if (subProfile.libs) {
+            if (typeof subProfile.libs == "string") {
+              subProfile.libs = JSON.parse(subProfile.libs);  
+            }
+            for (var libId in subProfile.libs) {
+              var lib = subProfile.libs[libId];
+              lib.start += prefix * parseInt("0x1000000000000", 16);
+              lib.end += prefix * parseInt("0x1000000000000", 16);
+              sharedLibraries.push(lib);
+              sortSharedLibraries(sharedLibraries);
+            }
+          }
+        }
         if (!thread.samples)
             continue;
         for (var j = 0; j < thread.samples.length; j++) {
@@ -302,10 +337,10 @@ function assignSymbolsToLibraries(reporter, sharedLibraries, addresses) {
             //dump("Cant find lib for address: " + addresses[i] + "\n");
             continue;
         }
-        if (!(lib.name in symbolsToResolve)) {
-            symbolsToResolve[lib.name] = { library: lib, symbols: [] };
+        if (!(lib.start in symbolsToResolve)) {
+            symbolsToResolve[lib.start] = { library: lib, symbols: [] };
         }
-        symbolsToResolve[lib.name].symbols.push(addresses[i]);
+        symbolsToResolve[lib.start].symbols.push(addresses[i]);
         reporter.setProgress((i + 1) / addresses.length);
     }
     reporter.finish();
@@ -327,15 +362,15 @@ const kSymbolicationWarmupTime = 15; // ms
 function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
     reporter.begin("Resolving symbols...");
     var libReporters = {};
-    for (var lib in symbolsToResolve) {
-        var expectedDuration = kSymbolicationWarmupTime + symbolsToResolve[lib].symbols.length / kExpectedSymbolsProcessedPerMs;
-        libReporters[lib] = reporter.addSubreporter(expectedDuration);
+    for (var libStart in symbolsToResolve) {
+        var expectedDuration = kSymbolicationWarmupTime + symbolsToResolve[libStart].symbols.length / kExpectedSymbolsProcessedPerMs;
+        libReporters[libStart] = reporter.addSubreporter(expectedDuration);
     }
     runAsContinuation(function (resumeContinuation) {
         var resolvedSymbols = {};
-        for (var lib in symbolsToResolve) {
-            yield read_symbols_lib(libReporters[lib], symbolsToResolve[lib].library,
-                                   symbolsToResolve[lib].symbols, platform, resolvedSymbols,
+        for (var libStart in symbolsToResolve) {
+            yield read_symbols_lib(libReporters[libStart], symbolsToResolve[libStart].library,
+                                   symbolsToResolve[libStart].symbols, platform, resolvedSymbols,
                                    resumeContinuation, hwid);
         }
         setTimeout(function () {
@@ -372,7 +407,7 @@ function symbolicateJSONProfile(profile, sharedLibraries, platform, progressCall
             progressCallback(r.getProgress(), r.getAction());
         });
         totalProgressReporter.begin("Symbolicating profile...");
-        var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+        var foundSymbols = findSymbolsToResolveJSON(subreporters.symbolFinding, profile, sharedLibraries);
         resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
         var symbolsToResolve = assignSymbolsToLibraries(subreporters.symbolLibraryAssigning,
                                                         sharedLibraries, foundSymbols);
@@ -393,7 +428,7 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
 
     totalProgressReporter.begin("Symbolicating profile...");
 
-    var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile);
+    var stackAddresses = findSymbolsToResolveJSON(subreporters.symbolFinding, profile, sharedLibraries);
     resolveJSDocumentsJSON(subreporters.symbolFinding, profile);
 
     stackAddresses.sort();
