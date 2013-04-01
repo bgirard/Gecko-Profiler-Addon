@@ -44,10 +44,10 @@ then
 fi
 
 # or use nightly
-if [ -e /Applications/Nightly.app ]
+if [ -e /Applications/FirefoxNightly.app ]
 then
   echo Nightly
-  cfx run --binary /Applications/Nightly.app
+  cfx run --binary /Applications/FirefoxNightly.app
   exit
 fi
 
