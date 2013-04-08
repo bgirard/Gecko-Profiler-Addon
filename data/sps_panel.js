@@ -100,6 +100,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkThreads = document.getElementById("chkThreads");
+    if (chkThreads) {
+      chkThreads.disabled = !has_feature("threads") || val.isActive;
+      chkThreads.checked = val.isActive ? has_feature_active("threads") : get_feature_pref("threads");
+      chkThreads.onclick = function() {
+        self.port.emit("set_feature", {feature: "threads", value: chkThreads.checked});
+      }
+    }
+
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
