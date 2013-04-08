@@ -91,6 +91,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkUnwinder = document.getElementById("chkUnwinder");
+    if (chkUnwinder) {
+      chkUnwinder.disabled = !has_feature("unwinder") || val.isActive;
+      chkUnwinder.checked = val.isActive ? has_feature_active("unwinder") : get_feature_pref("unwinder");
+      chkUnwinder.onclick = function() {
+        self.port.emit("set_feature", {feature: "unwinder", value: chkUnwinder.checked});
+      }
+    }
+
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
