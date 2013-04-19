@@ -48,23 +48,6 @@ function get_feature_pref(feature) {
       return gFeaturesPrefs[feature] === true;
 }
 
-function sps_toggle_active() {
-    self.port.emit("toggle", "test");   
-}
-function sps_get_responsive() {
-    self.port.emit("responsive", "test");  
-}
-
-self.port.on("onShow", function(val) {
-    if (!gUpdateInterval)
-        gUpdateInterval = setInterval(sps_get_responsive,50);
-});
-self.port.on("onHide", function(val) {
-    if (gUpdateInterval)
-        clearInterval(gUpdateInterval);
-    gUpdateInterval = null;
-});
-
 self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
@@ -268,60 +251,4 @@ document.getElementById("selectTarget").onchange = select_target_change;
 self.port.on("getprofile", function(val) {
     document.getElementById("btnToggleActive").textContent = "Profile: " + val;
 });
-
-self.port.on("responsive", function(val) {
-    let canvas = document.getElementById("responseGraph");
-    var ctx = canvas.getContext("2d");
-    ctx.lineWidth = 1;
-    reset(ctx, canvas);
-    drawGraph(ctx, val, 5, 5, 100, 50);
-    drawAxis(ctx, 5, 5, 100, 50);
-});
-
-// Plot sizes
-var margin = 5;
-var height = 50;
-var width = 200;
-
-function onClick() {
-  // close the plot panel and open a new tab
-  postMessage("close");
-}
-
-function reset(ctx, canvas) {
-  // reset the canvas
-     ctx.clearRect(0,0,canvas.width,canvas.height);
-     ctx.beginPath();
-}
-
-function drawAxis(ctx, x, y, w, h) {
-  ctx.strokeStyle = "black";
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, y+h);
-  ctx.lineTo(x+w, y+h);
-  ctx.stroke();
-}
-
-function drawGraph(ctx, data, x, y, w, h) {
-  ctx.strokeStyle = "green";
-  ctx.fillStyle = "#888";
-  ctx.beginPath();
-  ctx.moveTo(x, y+h);
-  
-  var max = 100;
-  
-  for(var i = 0; i < data.length; i++) {
-      if (data[i] > 100) data[i] = 100;
-  }
-  
-  for(var i = 0; i < data.length; i++) {
-      ctx.lineTo(x+i, y+h-data[i]/max*h);
-  }
-  
-  ctx.lineTo(x+data.length, y+h);
-  ctx.lineTo(x, y+h);
-  ctx.fill();
-  ctx.stroke();
-}
 
