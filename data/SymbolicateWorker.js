@@ -469,11 +469,22 @@ function symbolicateWindows(profile, sharedLibraries, uri, finishCallback) {
         let offset = pc - lib.start;
         processedStack.push([moduleIndex, offset]);
     }
+
+    // Tell the symbolication server which app & OS symbols to consult
+    let symbolSources = [sPlatform, sAppName];
+    for (module of Object.keys(moduleToModuleIndex)) {
+      capsModule = module.toUpperCase();
+      if (capsModule.startsWith("NPSWF") || capsModule.startsWith("FLASHPLAYERPLUGIN")) {
+        symbolSources.push("Flash");
+        break;
+      }
+    }
+
     // free
     moduleToModuleIndex = null;
 
     symbolicationRequest = { "stacks": [processedStack], "memoryMap": memoryMap,
-                             "version": 3, "osName": sPlatform, "appName": sAppName };
+                             "version": 3, "symbolSources": symbolSources };
     var requestJson = JSON.stringify(symbolicationRequest);
 
     try {

@@ -121,6 +121,10 @@ self.port.on("change_status", function(val) {
     document.getElementById("systemLibCache").textContent = val.systemLibCache;
     document.getElementById("fennecLibCache").textContent = val.fennecLibCache;
 });
+
+function sps_toggle_active() {
+  self.port.emit("toggle", "test");
+}
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
 var onShow = {
