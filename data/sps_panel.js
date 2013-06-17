@@ -110,6 +110,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkMainthreadio = document.getElementById("chkMainthreadio");
+    if (chkMainthreadio) {
+      chkMainthreadio.disabled = !has_feature("mainthreadio") || val.isActive;
+      chkMainthreadio.checked = val.isActive ? has_feature_active("mainthreadio") : get_feature_pref("mainthreadio");
+      chkMainthreadio.onclick = function() {
+        self.port.emit("set_feature", {feature: "mainthreadio", value: chkMainthreadio.checked});
+      }
+    }
+
     document.getElementById("specialOptions").style.display = (val.profilerTargetDescription == "Local") ?
                                                               "" : "none";
     document.getElementById("btnScreencast").style.display = (val.hasScreencast) ?
@@ -121,6 +130,10 @@ self.port.on("change_status", function(val) {
     document.getElementById("systemLibCache").textContent = val.systemLibCache;
     document.getElementById("fennecLibCache").textContent = val.fennecLibCache;
 });
+
+function sps_toggle_active() {
+  self.port.emit("toggle", "test");
+}
 document.getElementById("btnToggleActive").onclick = sps_toggle_active;
 
 var onShow = {
