@@ -92,12 +92,12 @@ self.port.on("change_status", function(val) {
       chkThreads.checked = val.isActive ? has_feature_active("threads") : get_feature_pref("threads");
       chkThreads.onclick = function() {
         self.port.emit("set_feature", {feature: "threads", value: chkThreads.checked});
-        txtThreadFilter.disabled = !has_feature('threadfilter') || !chkThreads.checked;
+        txtThreadFilter.disabled = !chkThreads.checked;
       }
     }
 
     if (txtThreadFilter) {
-      txtThreadFilter.disabled = !has_feature('threadfilter') || chkThreads.disabled || !chkThreads.checked;
+      txtThreadFilter.disabled = chkThreads.disabled || !chkThreads.checked;
       txtThreadFilter.value = val.isActive ? gThreadFilter : (gFeaturesPrefs['threadfilter'] || '');
       txtThreadFilter.onchange = function() {
         self.port.emit('set_threadfilter', txtThreadFilter.value);
