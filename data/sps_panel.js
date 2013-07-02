@@ -37,6 +37,7 @@ var gStartedWithFeatures = [];
 var gFeatureList = [];
 var gUpdateInterval = null;
 var gFeaturesPrefs = {};
+var gThreadFilter = '';
 
 function has_feature(feature) {
   return gFeatureList.indexOf(feature) !== -1;
@@ -52,6 +53,7 @@ self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
     gFeaturesPrefs = val.profilerFeaturesPrefs;
+    gThreadFilter = val.threadFilter || '';
 
     var chkJank = document.getElementById("chkJank");
     if (chkJank) {
@@ -84,12 +86,22 @@ self.port.on("change_status", function(val) {
     }
 
     var chkThreads = document.getElementById("chkThreads");
+    var txtThreadFilter = document.getElementById('txtThreadFilter');
     if (chkThreads) {
       chkThreads.disabled = !has_feature("threads") || val.isActive;
       chkThreads.checked = val.isActive ? has_feature_active("threads") : get_feature_pref("threads");
       chkThreads.onclick = function() {
         self.port.emit("set_feature", {feature: "threads", value: chkThreads.checked});
+        txtThreadFilter.disabled = !has_feature('threadfilter') || !chkThreads.checked;
       }
+    }
+
+    if (txtThreadFilter) {
+      txtThreadFilter.disabled = !has_feature('threadfilter') || chkThreads.disabled || !chkThreads.checked;
+      txtThreadFilter.value = val.isActive ? gThreadFilter : (gFeaturesPrefs['threadfilter'] || '');
+      txtThreadFilter.onchange = function() {
+        self.port.emit('set_threadfilter', txtThreadFilter.value);
+      };
     }
 
     var chkJS = document.getElementById("chkJS");
