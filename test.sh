@@ -36,13 +36,6 @@ then
   exit
 fi
 
-if [ -e /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64dbg/dist/NightlyDebug.app ]
-then
-  echo "64 dbg"
-  cfx run --binary /Users/bgirard/ssd-mozilla/mozilla-central/builds/obj-ff-64dbg/dist/NightlyDebug.app/Contents/MacOS/firefox
-  exit
-fi
-
 if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
   echo Nightly
