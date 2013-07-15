@@ -26,12 +26,13 @@ function init_symbol_worker(platform, abi, appName, androidLibsPrefix, fennecLib
         platform = "Linux";
     }
     sPlatform = platform;
-    sCmdWorker = new ChromeWorker("CmdRunWorker.js");
-    sCmdWorker.postMessage({type: "platform", cmd: platform});
     sAbi = abi;
     sAppName = appName;
     sAndroidLibsPrefix = androidLibsPrefix;
     sFennecLibsPrefix = fennecLibsPrefix;
+    // Perform most initializations first because lines below may throw exceptions
+    sCmdWorker = new ChromeWorker("CmdRunWorker.js");
+    sCmdWorker.postMessage({type: "platform", cmd: platform});
 }
 
 var inited = false;
@@ -581,14 +582,12 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     if (libBaseName[0] == "!") {
                         libBaseName = libBaseName.substring(1);
                     }
-                    if (!androidHWID) {
-                        // If we don't have a HWID assume all the so are in the tmp root
-                        lib = "/tmp/" + libBaseName;
-                    } else if (libBaseName.indexOf("/") == -1) {
+                    androidHWID = androidHWID ? '/' + androidHWID : '';
+                    if (libBaseName.indexOf("/") == -1) {
                         // you better not have any spaces in any of this, because I just don't care about you if that's the case
-                        lib = "`find " + sAndroidLibsPrefix + "/" + androidHWID + " -name " + libBaseName + " | head -1`";
+                        lib = "`find " + sAndroidLibsPrefix + androidHWID + " -name " + libBaseName + " | head -1`";
                     } else {
-                        lib = sAndroidLibsPrefix + "/" + androidHWID + "/" + libBaseName;
+                        lib = sAndroidLibsPrefix + androidHWID + "/" + libBaseName;
                     }
                 }
 
