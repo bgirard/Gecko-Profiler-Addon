@@ -77,15 +77,18 @@ self.postMessage = function (msg) {
   }
 }
 
-function symbolicate_file(fileName) {
+function symbolicate_file(fileName, prefix, app) {
     var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
     var abi = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).XPCOMABI;
+    prefix = prefix || '/tmp';
+    app = app || 'org.mozilla.fennec';
 
     self.onmessage({ data : {
         platform: hh["platform"],
         abi: abi,
-        androidLibsPrefix: "/tmp",
-        fennecLibsPrefix: "/tmp"
+        appname: app,
+        androidLibsPrefix: prefix,
+        fennecLibsPrefix: prefix
     }});
     dump("Start\n");
     profile = runCommandWorker("cat " + fileName);
