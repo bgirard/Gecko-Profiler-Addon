@@ -139,8 +139,8 @@ self.port.on("change_status", function(val) {
     document.getElementById("lblTargetDesc").textContent = val.profilerTargetDescription;
     document.getElementById("btnToggleActive").textContent = val.runningLabel;
     //document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
-    document.getElementById("systemLibCache").textContent = val.systemLibCache;
-    document.getElementById("fennecLibCache").textContent = val.fennecLibCache;
+    document.getElementById("systemLibCache").value = val.systemLibCache;
+    document.getElementById("fennecLibCache").value = val.fennecLibCache;
 });
 
 function sps_toggle_active() {
@@ -258,12 +258,12 @@ function open_settings() {
 document.getElementById("btnSettings").onclick = open_settings;
 
 function browse_system_lib_folder() {
-    self.port.emit("browselibfolder", document.getElementById("systemLibCache"));
+    self.port.emit("browselibfolder", document.getElementById("systemLibCache").value);
 }
 document.getElementById("btnALibBrowse").onclick = browse_system_lib_folder;
 
 function browse_fennec_lib_folder() {
-    self.port.emit("browselibfolder", document.getElementById("fennecLibCache"));
+    self.port.emit("browselibfolder", document.getElementById("fennecLibCache").value);
 }
 document.getElementById("btnFLibBrowse").onclick = browse_fennec_lib_folder;
 
