@@ -169,7 +169,6 @@ function showPanel(name) {
     // Do this manually until we can figure out getElementsByClassName
     document.getElementById("divTypeTcpConnect").style.display = "none";
     document.getElementById("divTypeAdbConfig").style.display = "none";
-    document.getElementById("divTypeLog").style.display = "none";
 
     document.getElementById("divTypeControls").style.display = "none";
 
@@ -183,8 +182,8 @@ self.port.on("show_panel", function(val) {
 });
 
 self.port.on("show_log", function(val) {
-    showPanel("Log");
-    document.getElementById("TargetLog").value = val;
+    showPanel("AdbConfig");
+    document.getElementById("adbStatus").textContent = val;
 });
 
 self.port.on("show_adb_status", function(val) {
