@@ -190,17 +190,32 @@ self.port.on("show_adb_status", function(val) {
   document.getElementById("adbStatus").textContent = val;
 });
 
+self.port.on("show_packages", function(val) {
+    var pkgs = document.getElementById("fennecPkg");
+    // clear the packages list except "auto"
+    pkgs.options.length = 1;
+    val.forEach(function (val) {
+        var opt = document.createElement("option");
+        opt.text = val;
+        opt.value = val;
+        pkgs.options.add(opt);
+    });
+    pkgs.selectedIndex = pkgs.options.length - 1;
+});
+
 function bugzilla_file_bug() {
     self.port.emit("filebug", "test");
 }
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
 function adbConnect() {
+    var pkg = document.getElementById("fennecPkg").value;
     var options = {
         systemLibCache: document.getElementById("systemLibCache").value,
         fennecLibCache: document.getElementById("fennecLibCache").value,
         port: document.getElementById("adbPort").value,
         remotePort: document.getElementById("debugPort").value,
+        pkg: pkg === "auto" ? null : pkg
     };
     document.getElementById("adbStatus").textContent = "Connecting via adb on port " + options.port + ".";
     self.port.emit("adbconnect", options);
