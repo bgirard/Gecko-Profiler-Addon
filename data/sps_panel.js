@@ -169,7 +169,6 @@ function showPanel(name) {
     // Do this manually until we can figure out getElementsByClassName
     document.getElementById("divTypeTcpConnect").style.display = "none";
     document.getElementById("divTypeAdbConfig").style.display = "none";
-    document.getElementById("divTypeLog").style.display = "none";
 
     document.getElementById("divTypeControls").style.display = "none";
 
@@ -183,12 +182,25 @@ self.port.on("show_panel", function(val) {
 });
 
 self.port.on("show_log", function(val) {
-    showPanel("Log");
-    document.getElementById("TargetLog").value = val;
+    showPanel("AdbConfig");
+    document.getElementById("adbStatus").textContent = val;
 });
 
 self.port.on("show_adb_status", function(val) {
   document.getElementById("adbStatus").textContent = val;
+});
+
+self.port.on("show_packages", function(val) {
+    var pkgs = document.getElementById("fennecPkg");
+    // clear the packages list except "auto"
+    pkgs.options.length = 1;
+    val.forEach(function (val) {
+        var opt = document.createElement("option");
+        opt.text = val;
+        opt.value = val;
+        pkgs.options.add(opt);
+    });
+    pkgs.selectedIndex = pkgs.options.length - 1;
 });
 
 function bugzilla_file_bug() {
@@ -197,11 +209,13 @@ function bugzilla_file_bug() {
 //document.getElementById("btnFileBug").onclick = bugzilla_file_bug;
 
 function adbConnect() {
+    var pkg = document.getElementById("fennecPkg").value;
     var options = {
         systemLibCache: document.getElementById("systemLibCache").value,
         fennecLibCache: document.getElementById("fennecLibCache").value,
         port: document.getElementById("adbPort").value,
         remotePort: document.getElementById("debugPort").value,
+        pkg: pkg === "auto" ? null : pkg
     };
     document.getElementById("adbStatus").textContent = "Connecting via adb on port " + options.port + ".";
     self.port.emit("adbconnect", options);
