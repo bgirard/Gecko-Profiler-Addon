@@ -70,14 +70,18 @@ table {
 	    <div class="info">Where to look for/unpack Fennec libs to.</div>
 	</td></tr>
 
+	<tr><td>
+	    Package:
+	    <select id="fennecPkg">
+		<option value="auto">(auto)</option>
+	    </select>
+	</td></tr>
+
 	<tr><td>&nbsp;</td></tr>
 
 	<tr><td><div id="adbStatus" class="status"></div></td></tr>
 	<tr><td><button id="btnAdbConnect" type="button" style="left: 150px;">Connect</button></td></tr>
       </table>
-    </div>
-    <div class="targetPanel" id="divTypeLog" style="display:none">
-      <textarea readonly="true" cols="25" rows="10" id="TargetLog"></textarea>
     </div>
     <div class="targetPanel" id="divTypeControls">
       Connected to: <a id="lblTargetDesc"></a><br>
