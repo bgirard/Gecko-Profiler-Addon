@@ -211,12 +211,19 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
           if (profile.threads[i].threads != null) {
             profile.threads[i] = profile.threads[i].threads[0];
             thread = profile.threads[i];
+            var deltaTime = 0;
+            if (profile.meta.startTime && subProfile.meta.startTime) {
+              deltaTime = subProfile.meta.startTime - profile.meta.startTime;
+            }
             for (sampleId in profile.threads[i].samples) {
               var sample = profile.threads[i].samples[sampleId];
               for (frameId in sample.frames) {
                 if (sample.frames[frameId].location.startsWith("0x")) {
                   sample.frames[frameId].location = prefix * parseInt("0x1000000000000", 16) + parseInt(sample.frames[frameId].location, 16);
                   sample.frames[frameId].location = "0x" + sample.frames[frameId].location.toString(16);
+                }
+                if (sample.time) {
+                  sample.time += deltaTime;
                 }
               }
             }
