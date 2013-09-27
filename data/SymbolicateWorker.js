@@ -657,15 +657,17 @@ function usingStrippedLibrary(originalLibraryPath, reporter, callback, finishCal
         // "strip -S". This will make atos run much faster, at least for local
         // builds which have filename and line number information.
         var randomNumber = Math.floor(Math.random() * 1000000);
-        var tmpDir = "/tmp/tmp_stripped_library_" + randomNumber;
+        var tmpDir = "/tmp/sps_stripped_library";
         yield runCommand("mkdir " + tmpDir, resumeContinuation);
         var strippedLibraryPath = tmpDir + "/" + libraryFilename;
-        var stripCommand = "strip -S '" + originalLibraryPath + "' -o '" +
-                             strippedLibraryPath + "'";
+        var stripCommand = "(md5 '" + originalLibraryPath + "' > '" + strippedLibraryPath + ".md5.cmp' && " +
+                           " diff '" + strippedLibraryPath + ".md5' '" + strippedLibraryPath + ".md5.cmp') || " +
+                           "strip -S '" + originalLibraryPath + "' -o '" + strippedLibraryPath + "' && " +
+                           "mv '" + strippedLibraryPath + ".md5.cmp' '" + strippedLibraryPath + ".md5'";
         yield runCommand(stripCommand, resumeContinuation);
         subreporters.strip.finish();
         yield callback(strippedLibraryPath, subreporters.readSymbols, resumeContinuation);
-        runCommand("rm -rf " + tmpDir, function () { finishCallback(subreporters.readSymbols); });
+        finishCallback(subreporters.readSymbols);
     });
 }
 
