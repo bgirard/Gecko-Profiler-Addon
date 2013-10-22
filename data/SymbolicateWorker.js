@@ -243,18 +243,35 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
         }
         if (!thread.samples)
             continue;
+
+        function HandleFrame(frame) {
+            if (frame.location.indexOf("0x") == 0) {
+              addresses[frame.location] = null;
+            }
+            if (frame.lr !== undefined && frame.lr.indexOf("0x") == 0) {
+              addresses[frame.lr] = null;
+            }
+        }
+
         for (var j = 0; j < thread.samples.length; j++) {
             var sample = thread.samples[j];
             if (!sample.frames)
                 continue;
+            if (sample.marker) {
+                for (var k = 0; k < sample.marker.length; k++) {
+                    var marker = sample.marker[k];
+                    if (marker.data && marker.data.stack && marker.data.stack.samples) {
+                        for (var a = 0; a < marker.data.stack.samples.length; a++) { 
+                            var nestedSample = marker.data.stack.samples[a];
+                            for (var b = 0; b < nestedSample.frames.length; b++) {
+                                HandleFrame(nestedSample.frames[k]);
+                            }
+                        }
+                    }
+                }
+            }
             for (var k = 0; k < sample.frames.length; k++) {
-                var frame = sample.frames[k];
-                if (frame.location.indexOf("0x") == 0) {
-                  addresses[frame.location] = null;
-                }
-                if (frame.lr !== undefined && frame.lr.indexOf("0x") == 0) {
-                  addresses[frame.lr] = null;
-                }
+                HandleFrame(sample.frames[k]);
             }
         }
     }
