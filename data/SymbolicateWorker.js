@@ -264,7 +264,7 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
                         for (var a = 0; a < marker.data.stack.samples.length; a++) { 
                             var nestedSample = marker.data.stack.samples[a];
                             for (var b = 0; b < nestedSample.frames.length; b++) {
-                                HandleFrame(nestedSample.frames[k]);
+                                HandleFrame(nestedSample.frames[b]);
                             }
                         }
                     }
