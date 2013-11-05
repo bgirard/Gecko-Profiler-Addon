@@ -104,6 +104,15 @@ self.port.on("change_status", function(val) {
       };
     }
 
+    var chkPower = document.getElementById("chkPower");
+    if (chkPower) {
+      chkPower.disabled = !has_feature("power") || val.isActive;
+      chkPower.checked = val.isActive ? has_feature_active("power") : get_feature_pref("power");
+      chkPower.onclick = function() {
+        self.port.emit("set_feature", {feature: "power", value: chkPower.checked});
+      }
+    }
+
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
