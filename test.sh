@@ -17,6 +17,12 @@ cd ..
 #  exit
 #fi
 
+if [ -e /home/v/Downloads/firefox/firefox ]
+then
+  cfx run --binary /home/v/Downloads/firefox/firefox
+  exit
+fi
+
 if [ -e ./firefox/firefox ]
 then
   cfx run --binary ./firefox/firefox
