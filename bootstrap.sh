@@ -8,6 +8,4 @@ cd sdk
 git checkout 1.13.2
 mkdir packages
 cd packages
-git clone https://github.com/erikvold/vold-utils-jplib
-git clone https://github.com/erikvold/xulkeys-jplib
-git clone https://github.com/voldsoftware/toolbarbutton-jplib.git
+git clone https://github.com/erikvold/addon-pathfinder

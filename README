@@ -16,21 +16,4 @@ For the platform support see 'tools/profiler' in gecko.
 INSTALLING
 ==========
 
-In order to install this add-on, you need a copy of the add-on SDK.  Please do the following:
-
-1. Use the bootstrap.sh script
-
-  or do it manually,
-
-1. `cd /path/to/Gecko-Profiler-Addon`
-2. `git clone https://github.com/mozilla/addon-sdk sdk && cd sdk`
-   `git checkout 1.13.2` (the latest SDK version)
-   `cd ..`
-3. `mkdir packages && cd packages`
-   `git clone https://github.com/erikvold/vold-utils-jplib`
-   `git clone https://github.com/erikvold/xulkeys-jplib`
-   `git clone https://github.com/voldsoftware/toolbarbutton-jplib.git`
-   `cd ..`
-4. `cd sdk && . bin/activate && cd ..`
-5. `cfx xpi`
-
+In order to install this add-on, you need a copy of the add-on SDK.  Please use the `bootstrap.sh` script.
