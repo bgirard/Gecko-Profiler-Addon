@@ -64,9 +64,6 @@ self.port.on("change_status", function(val) {
       }
     }
 
-    var btnSave = document.getElementById("btnSave");
-    btnSave.disabled = !val.isActive && !has_feature_active("copyProfileOnStop");
-
     var chkStackwalk = document.getElementById("chkStackwalk");
     if (chkStackwalk) {
       chkStackwalk.disabled = !has_feature("stackwalk") || val.isActive;
@@ -146,16 +143,26 @@ self.port.on("change_status", function(val) {
                                                               "" : "none";
 
     document.getElementById("lblTargetDesc").textContent = val.profilerTargetDescription;
-    document.getElementById("btnToggleActive").textContent = val.runningLabel;
+    if (val.isActive) {
+      document.getElementById("spanStart").style.display = 'none';
+      document.getElementById("spanStop").style.display = 'inline';
+    } else {
+      document.getElementById("spanStart").style.display = 'inline';
+      document.getElementById("spanStop").style.display = 'none';
+    }
     //document.getElementById("divAdb").style.display = get_feature_pref("adb") ? "" : "none";
     document.getElementById("systemLibCache").value = val.systemLibCache;
     document.getElementById("fennecLibCache").value = val.fennecLibCache;
 });
 
-function sps_toggle_active() {
-  self.port.emit("toggle", "test");
+function sps_start_profiler() {
+  self.port.emit("start_profiler", "test");
 }
-document.getElementById("btnToggleActive").onclick = sps_toggle_active;
+function sps_stop_profiler() {
+  self.port.emit("stop_profiler", "test");
+}
+document.getElementById("btnStartProfiler").onclick = sps_start_profiler;
+document.getElementById("btnStopProfiler").onclick = sps_stop_profiler;
 
 var onShow = {
   "TcpConnect": function() {
@@ -295,8 +302,4 @@ function select_target_change() {
     self.port.emit("changetarget", value);
 }
 document.getElementById("selectTarget").onchange = select_target_change;
-
-self.port.on("getprofile", function(val) {
-    document.getElementById("btnToggleActive").textContent = "Profile: " + val;
-});
 
