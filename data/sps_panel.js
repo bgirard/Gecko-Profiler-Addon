@@ -49,6 +49,10 @@ function get_feature_pref(feature) {
       return gFeaturesPrefs[feature] === true;
 }
 
+self.port.on("private_browsing_failure", function(val) {
+  document.getElementById("privateWarning").style.display="inline";
+});
+
 self.port.on("change_status", function(val) {
     gStartedWithFeatures = val.startedWithFeatures;
     gFeatureList = val.profilerFeatures;
@@ -144,6 +148,7 @@ self.port.on("change_status", function(val) {
 
     document.getElementById("lblTargetDesc").textContent = val.profilerTargetDescription;
     if (val.isActive) {
+      document.getElementById("privateWarning").style.display = 'none';
       document.getElementById("spanStart").style.display = 'none';
       document.getElementById("spanStop").style.display = 'inline';
     } else {
