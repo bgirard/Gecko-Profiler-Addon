@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 if [ ! -d "sdk" ]; then
   echo "Must download the sdk first. See the INSTALLING for more info"
   exit
