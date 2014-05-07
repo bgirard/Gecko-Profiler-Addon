@@ -253,13 +253,15 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
             }
         }
 
-        for (var j = 0; j < thread.markers.length; j++) {
-            var marker = thread.markers[j];
-            if (marker.data && marker.data.stack && marker.data.stack.samples) {
-                for (var a = 0; a < marker.data.stack.samples.length; a++) { 
-                    var nestedSample = marker.data.stack.samples[a];
-                    for (var b = 0; b < nestedSample.frames.length; b++) {
-                        HandleFrame(nestedSample.frames[b]);
+        if (thread.markers) {
+            for (var j = 0; j < thread.markers.length; j++) {
+                var marker = thread.markers[j];
+                if (marker.data && marker.data.stack && marker.data.stack.samples) {
+                    for (var a = 0; a < marker.data.stack.samples.length; a++) { 
+                        var nestedSample = marker.data.stack.samples[a];
+                        for (var b = 0; b < nestedSample.frames.length; b++) {
+                            HandleFrame(nestedSample.frames[b]);
+                        }
                     }
                 }
             }
