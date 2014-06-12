@@ -9,4 +9,4 @@ cd sdk
 git checkout firefox30
 mkdir packages
 cd packages
-git clone https://github.com/erikvold/addon-pathfinder
+git clone https://github.com/erikvold/pathfinder addon-pathfinder

@@ -2,8 +2,8 @@
 
 set -e
 
-if [ ! -d "sdk" ]; then
-  echo "Must download the sdk first. See the INSTALLING for more info"
+if [ ! -d "sdk/packages/addon-pathfinder" ]; then
+  echo "Must download the sdk and pathfinder addon first. See bootstrap.sh or the README for more info"
   exit
 fi
 
