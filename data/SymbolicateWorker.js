@@ -394,9 +394,13 @@ function resolveSymbols(reporter, symbolsToResolve, platform, callback, hwid) {
     runAsContinuation(function (resumeContinuation) {
         var resolvedSymbols = {};
         for (var libStart in symbolsToResolve) {
+          // HACK: we can't copy temporary symbols in /dev/ashmem from the device,
+          // so just skip them
+          if (symbolsToResolve[libStart].library !== "/dev/ashmem/dalvik-jit-code-cache") {
             yield read_symbols_lib(libReporters[libStart], symbolsToResolve[libStart].library,
                                    symbolsToResolve[libStart].symbols, platform, resolvedSymbols,
                                    resumeContinuation, hwid);
+          }
         }
         setTimeout(function () {
             callback(resolvedSymbols);
