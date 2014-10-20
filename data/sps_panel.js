@@ -110,6 +110,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkGPU = document.getElementById("chkGPU");
+    if (chkGPU) {
+      chkGPU.disabled = !has_feature("gpu") || val.isActive;
+      chkGPU.checked = val.isActive ? has_feature_active("gpu") : get_feature_pref("gpu");
+      chkGPU.onclick = function() {
+        self.port.emit("set_feature", {feature: "gpu", value: chkGPU.checked});
+      }
+    }
+
     var chkJS = document.getElementById("chkJS");
     if (chkJS) {
       chkJS.disabled = !has_feature("js") || val.isActive;
