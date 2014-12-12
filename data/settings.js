@@ -172,11 +172,11 @@ function addSamplingSettingsDiv(div, featureName, desc) {
   submitButton.type = "button";
   submitButton.textContent = "Set values";
   submitButton.onclick = function() {
-    var samplingInterval = parseInt(intervalField.value);
+    var samplingInterval = parseFloat(intervalField.value);
     var sampleBufferSize = parseInt(entriesField.value);
     if (isNaN(samplingInterval) || isNaN(sampleBufferSize) ||
         samplingInterval <= 0 || sampleBufferSize <= 0) {
-      alert("Sampling Interval & Sample Buffer Size must be positive integers.");
+      alert("Sampling Interval & Sample Buffer Size must be positive float/integers.");
       return;
     }
 
