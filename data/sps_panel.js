@@ -137,6 +137,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkLayersDump = document.getElementById("chkLayersDump");
+    if (chkLayersDump) {
+      chkLayersDump.disabled = !has_feature("layersdump") || val.isActive;
+      chkLayersDump.checked = get_feature_pref("layersdump");
+      chkLayersDump.onclick = function() {
+        self.port.emit("set_feature", {feature: "layersdump", value: chkLayersDump.checked});
+      }
+    }
+
     var chkMainthreadio = document.getElementById("chkMainthreadio");
     if (chkMainthreadio) {
       chkMainthreadio.disabled = !has_feature("mainthreadio") || val.isActive;
