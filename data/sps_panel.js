@@ -146,6 +146,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkDisplayListDump = document.getElementById("chkDisplayListDump");
+    if (chkDisplayListDump) {
+      chkDisplayListDump.disabled = !has_feature("displaylistdump") || val.isActive;
+      chkDisplayListDump.checked = get_feature_pref("displaylistdump");
+      chkDisplayListDump.onclick = function() {
+        self.port.emit("set_feature", {feature: "displaylistdump", value: chkDisplayListDump.checked});
+      }
+    }
+
     var chkMainthreadio = document.getElementById("chkMainthreadio");
     if (chkMainthreadio) {
       chkMainthreadio.disabled = !has_feature("mainthreadio") || val.isActive;
