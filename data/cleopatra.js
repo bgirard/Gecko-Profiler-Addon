@@ -32,57 +32,18 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
-function get_profile_desktop() {
-    self.port.emit("getprofile", "test");
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
-}
 
-function get_profile_start() {
-    self.port.emit("adbstart", "test");
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
-}
-
-function get_profile_adb(args) {
-    self.port.emit("adbpull", args);
-  console.log('get_profile_adb', args);
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
-}
-
-
-function get_profile_libs() {
-    self.port.emit("adblibs", "test");
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
-}
-
-function get_profile_importpackage(fileName) {
-    self.port.emit("importpackage", fileName);
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
-}
-
-self.port.on("getprofile_progress", function(e) {
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress, action: e.action}), "*");
+self.port.on("importFromAddonProgress", function(e) {
+  document.defaultView.postMessage(JSON.stringify({task: "importFromAddonProgress", progress: e.progress, action: e.action}), "*");
 });
 
-self.port.on("getprofile", function(val) {
-    if (window.unsafeWindow && unsafeWindow.loadProfile)
-      unsafeWindow.importFromAddonFinish(val);
-    else
-      document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
+self.port.on("importFromAddonFinish", function(val) {
+  if (window.unsafeWindow && unsafeWindow.loadProfile)
+    unsafeWindow.importFromAddonFinish(val);
+  else
+    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
 });
 
-self.port.on("get_profile_desktop", function(val) {
-    get_profile_desktop();
-});
-self.port.on("get_profile_adb", function(val) {
-    get_profile_adb(val);
-});
-self.port.on("get_profile_start", function(val) {
-    get_profile_start();
-});
-self.port.on("get_profile_libs", function(val) {
-    get_profile_libs();
-});
-self.port.on("get_profile_importpackage", function(fileName) {
-    get_profile_importpackage(fileName);
+self.port.on("importFromAddonStart", function (val) {
+  document.defaultView.postMessage(JSON.stringify({task: "importFromAddonStart"}), "*");
 });
