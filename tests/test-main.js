@@ -1,13 +1,21 @@
 const m = require("main");
 const self = require("self");
 
-exports.testHarness = function(test) {
-  console.log("test harness");
-  test.assert(true);
+exports.smokeTest = function(test) {
+  m.main();
+  m.getProfiler().isActive(function(val) {
+    test.assert(val);
+    m.onUnload();
+  });
 };
 
 exports.testHarness2 = function(test) {
-  console.log("test harness2");
-  test.assert(true);
+  m.main();
+  m.getProfiler().getFeatures(function(features) {
+    test.assert(features.length > 0);
+    // js is a core profiler features and should always be there
+    test.assert(features.indexOf("js") != -1);
+    m.onUnload();
+  });
 };
 
