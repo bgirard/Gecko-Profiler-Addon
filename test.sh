@@ -62,5 +62,4 @@ then
   exit
 fi
 
-echo "Unable to find a firefox installation!"
-exit 1
+cfx test -v

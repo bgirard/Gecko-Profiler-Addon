@@ -6,3 +6,8 @@ exports.testHarness = function(test) {
   test.assert(true);
 };
 
+exports.testHarness2 = function(test) {
+  console.log("test harness2");
+  test.assert(true);
+};
+
