@@ -15,8 +15,8 @@ if [ ! -d "packages" ]; then
 fi
 cd packages
 if [ ! -d "addon-pathfinder" ]; then
-  git clone https://github.com/erikvold/pathfinder addon-pathfinder
+  git clone https://github.com/bgirard/addon-pathfinder addon-pathfinder
 fi
 cd addon-pathfinder
 git fetch origin
-git checkout 4e6ec016b6c1d7f338b0e7b78b997766e7643d72
+git checkout 78e1191dc0ccd810657be813ec458a27494ebad5
