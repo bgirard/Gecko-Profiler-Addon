@@ -22,6 +22,13 @@ cd ..
 #  exit
 #fi
 
+if [ -e "$1" ]
+then
+  echo "Custom binary: $1"
+  cfx test -v --binary "$1"
+  exit
+fi
+
 if [ -e /home/v/Downloads/firefox/firefox ]
 then
   cfx test -v --binary /home/v/Downloads/firefox/firefox
