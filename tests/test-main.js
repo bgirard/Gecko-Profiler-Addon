@@ -1,6 +1,5 @@
 const m = require("main");
 const self = require("self");
-const tabs = require("sdk/tabs");
 
 function startTest(test) {
   test.waitUntilDone(5000);
@@ -10,10 +9,18 @@ function startTest(test) {
 function stopTest(test) {
   m.onUnload();
 
+  // Close cleopatra first
+  var tabs = require("sdk/tabs");
   for (let tab of tabs) {
     if (tab.url.indexOf("cleopatra") != -1) {
+      console.log("Close cleopatra");
       tab.close();
     }
+  }
+  // Close remaining tabs
+  var tabs = require("sdk/tabs");
+  for (let tab of tabs) {
+    console.log("TAB: " + tab.url);
   }
 
   test.done();
