@@ -2,7 +2,7 @@ const m = require("main");
 const self = require("self");
 
 function startTest(test) {
-  test.waitUntilDone(5000);
+  test.waitUntilDone(5 * 60 * 1000);
   m.main();
 }
 
