@@ -14,9 +14,17 @@ function stopTest(test) {
   for (let tab of tabs) {
     if (tab.url.indexOf("cleopatra") != -1) {
       console.log("Close cleopatra");
-      tab.close();
+      tab.close(function() {
+        stopTestFinish(test);
+      });
+      return;
     }
   }
+
+  stopTestFinish(test);
+}
+
+function stopTestFinish(test) {
   // Close remaining tabs
   var tabs = require("sdk/tabs");
   for (let tab of tabs) {
