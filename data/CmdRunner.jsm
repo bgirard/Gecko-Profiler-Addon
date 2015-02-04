@@ -3,6 +3,8 @@ var EXPORTED_SYMBOLS = ["runCommand"];
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+var DEBUG_COMMANDS = false;
+
 var sWorker = null;
 function createWorker() {
   worker = new ChromeWorker("CmdRunWorker.js");
@@ -34,6 +36,10 @@ function runCommand(cmd, callback, isProgressive, progress_callback) {
           progress_callback(msg.data.progress);
         } else { // finish
           worker.removeEventListener("message", workerSentMessage);
+          if (DEBUG_COMMANDS) {
+            dump("ran command: " + cmd + "\n");
+            dump("got result: " + msg.data.result + "\n");
+          }
           if (callback)
             callback(msg.data.result);
           resolve(msg.data.result);
