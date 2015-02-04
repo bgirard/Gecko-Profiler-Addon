@@ -27,15 +27,19 @@ function exec(cmd, uniqueWorker) {
 
 function runCommand(cmd, callback, isProgressive, progress_callback) {
   var worker = getWorker();
-  worker.addEventListener("message", function workerSentMessage(msg) {
-    if (msg.data.cmd == cmd) {
-      if (msg.data.progress) {
-        progress_callback(msg.data.progress);
-      } else { // finish
-        worker.removeEventListener("message", workerSentMessage);
-        callback(msg.data.result);
+  return new Promise(function (resolve, reject) {
+    worker.addEventListener("message", function workerSentMessage(msg) {
+      if (msg.data.cmd == cmd) {
+        if (msg.data.progress) {
+          progress_callback(msg.data.progress);
+        } else { // finish
+          worker.removeEventListener("message", workerSentMessage);
+          if (callback)
+            callback(msg.data.result);
+          resolve(msg.data.result);
+        }
       }
-    }
+    });
+    worker.postMessage({type: "runCommand", cmd: cmd, isProgressive: isProgressive});
   });
-  worker.postMessage({type: "runCommand", cmd: cmd, isProgressive: isProgressive});
 }
