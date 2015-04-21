@@ -164,6 +164,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkJava = document.getElementById("chkJava");
+    if (chkJava) {
+      chkJava.disabled = !has_feature("java") || val.isActive;
+      chkJava.checked = val.isActive ? has_feature_active("java") : get_feature_pref("java");
+      chkJava.onclick = function() {
+        self.port.emit("set_feature", {feature: "java", value: chkJava.checked});
+      }
+    }
+
     document.getElementById("specialOptions").style.display = (val.profilerTargetDescription == "Local") ?
                                                               "" : "none";
     document.getElementById("btnScreencast").style.display = (val.hasScreencast) ?
