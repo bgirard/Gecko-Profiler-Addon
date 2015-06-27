@@ -6,7 +6,7 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 
 // Change this in main as well where we default init the pref
-const DEFAULT_SYMBOLICATION_URL = "http://symbolapi.mozilla.org/";
+const DEFAULT_SYMBOLICATION_URL = "http://symbolapi.mozilla.org/gecko-profiler/";
 
 function getPref(prefName, defaultValue) {
   var value = defaultValue;
