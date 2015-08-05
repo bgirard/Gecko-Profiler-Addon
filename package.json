@@ -17,5 +17,6 @@
     }],
     "name": "geckoprofiler",
     "fullName": "Gecko Profiler", 
-    "id": "jid0-edalmuivkozlouyij0lpdx548bc"
+    "id": "jid0-edalmuivkozlouyij0lpdx548bc@jetpack",
+    "main": "lib/main.js"
 }

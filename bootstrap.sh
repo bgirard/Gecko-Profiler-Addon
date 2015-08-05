@@ -4,6 +4,12 @@ hash git 2> /dev/null || {
   exit -1
 }
 
+hash jpm 2> /dev/null || {
+  echo "You must have jpm installed to bootstrap"
+  echo "run: npm install jpm -g"
+  exit -1
+}
+
 if [ ! -d "sdk" ]; then
   git clone https://github.com/mozilla/addon-sdk sdk
 fi
