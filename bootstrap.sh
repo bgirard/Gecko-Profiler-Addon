@@ -9,7 +9,7 @@ if [ ! -d "sdk" ]; then
 fi
 cd sdk
 git fetch origin
-git checkout firefox30
+git checkout firefox40
 if [ ! -d "packages" ]; then
   mkdir packages
 fi
