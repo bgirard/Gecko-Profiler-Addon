@@ -630,7 +630,7 @@ function readSymbolsLinux(reporter, platform, library, unresolvedList, resolvedS
                     }
                 }
 
-                cmd = "/bin/bash -l -c 'arm-eabi-addr2line -C -f -e \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
+                cmd = "/bin/bash -l -c 'arm-linux-androideabi-addr2line -C -f -e \"" + lib + "\" " + unresolvedSymbols.join(" ") + "'";
                 dump(cmd + "\n");
             }
 
@@ -752,7 +752,7 @@ function getSharedLibraries(lines, sharedLibraries) {
 
 function hasSymbolResolver(platform, callback) {
     if (platform === "Android") { 
-        var checkSym = runCommand("/bin/bash -l -c 'arm-eabi-addr2line --version'", resumeContinuation);
+        var checkSym = runCommand("/bin/bash -l -c 'arm-linux-androideabi-addr2line --version'", resumeContinuation);
         callback(checkSym.indexOf("GNU addr2line") == 0);
     } else {
         // TODO Add proper check for others platform
