@@ -16,4 +16,6 @@ rm geckoprofiler.xpi
 sed -e '/<\/em:targetApplication>/r ../fx_install.rdf' install.rdf > install.rdf.new
 mv install.rdf.new install.rdf
 zip -q -r ../geckoprofiler.xpi *
+cd ..
+rm -rf tmp
 echo "Firefox repack completed."
