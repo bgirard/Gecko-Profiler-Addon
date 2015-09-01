@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Repack the extension to add an update url to the install manifest.
+
 set -e 
 
 cd src
@@ -11,7 +13,9 @@ unzip -q geckoprofiler.xpi
 rm geckoprofiler.xpi
 # Find the first instance of </em:targetApplication>, and insert the Thunderbird
 # app description right after.
-sed -e '/<\/em:targetApplication>/r ../tb_install.rdf' install.rdf > install.rdf.new
+sed -e '/<\/em:targetApplication>/r ../fx_install.rdf' install.rdf > install.rdf.new
 mv install.rdf.new install.rdf
 zip -q -r ../geckoprofiler.xpi *
-echo "Thunderbird repack completed."
+cd ..
+rm -rf tmp
+echo "Firefox repack completed."
