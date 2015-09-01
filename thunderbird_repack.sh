@@ -2,6 +2,7 @@
 
 set -e 
 
+cd src
 rm -rf tmp
 mkdir tmp
 cp geckoprofiler.xpi tmp

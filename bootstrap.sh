@@ -10,6 +10,7 @@ hash jpm 2> /dev/null || {
   exit -1
 }
 
+cd src
 if [ ! -d "sdk" ]; then
   git clone https://github.com/mozilla/addon-sdk sdk
 fi

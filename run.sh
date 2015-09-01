@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd src
 if [ -e /home/v/Downloads/firefox/firefox ]
 then
   jpm run --binary /home/v/Downloads/firefox/firefox

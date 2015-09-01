@@ -2,6 +2,7 @@
 
 set -e
 
+cd src
 rm -rf geckoprofiler.xpi
 jpm xpi
 #sh thunderbird_repack.sh

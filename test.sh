@@ -4,6 +4,7 @@ set -e
 
 ./bootstrap.sh
 
+cd src
 if [ ! -d "sdk" ]; then
   echo "Must download the sdk first:"
   echo "git clone https://github.com/mozilla/addon-sdk sdk"
