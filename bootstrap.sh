@@ -27,4 +27,4 @@ if [ ! -d "addon-pathfinder" ]; then
 fi
 cd addon-pathfinder
 git fetch origin
-git checkout 78e1191dc0ccd810657be813ec458a27494ebad5
+git checkout 7a4be64ce32fdf9a876bb0e70b1e0d1a3c7e246c
