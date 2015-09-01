@@ -12,53 +12,49 @@ if [ ! -d "sdk" ]; then
   exit
 fi
 
-cd sdk
-. ./bin/activate
-cd ..
-
 # Check if a custom build is found first
 #if [ -e /Applications/Earlybird.app ]
 #then
-#  cfx test -v -a thunderbird --binary /Applications/Earlybird.app
+#  jpm test -v -a thunderbird --binary /Applications/Earlybird.app
 #  exit
 #fi
 
 if [ -e "$1" ]
 then
   echo "Custom binary: $1"
-  cfx test -v --binary "$1"
+  jpm test -v --binary "$1"
   exit
 fi
 
 if [ -e /home/v/Downloads/firefox/firefox ]
 then
-  cfx test -v --binary /home/v/Downloads/firefox/firefox
+  jpm test -v --binary /home/v/Downloads/firefox/firefox
   exit
 fi
 
 if [ -e ./firefox/firefox ]
 then
-  cfx test -v --binary ./firefox/firefox
+  jpm test -v --binary ./firefox/firefox
   exit
 fi
 
 if [ -e ~/firefox/firefox ]
 then
-  cfx test -v --binary ~/firefox/firefox
+  jpm test -v --binary ~/firefox/firefox
   exit
 fi
 
 if [ -e /Users/bgirard/mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app ]
 then
   echo "64 gdb"
-  cfx test -v --binary /Users/bgirard/mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
+  jpm test -v --binary /Users/bgirard/mozilla/mozilla-central/builds/obj-ff-64gdb/dist/Nightly.app
   exit
 fi
 
 if [ -e /Volumes/Nightly/FirefoxNightly.app ]
 then
   echo Nightly
-  cfx test -v --binary /Volumes/Nightly/FirefoxNightly.app
+  jpm test -v --binary /Volumes/Nightly/FirefoxNightly.app
   exit
 fi
 
@@ -66,8 +62,8 @@ fi
 if [ -e /Applications/FirefoxNightly.app ]
 then
   echo Nightly
-  cfx test -v --binary /Applications/FirefoxNightly.app
+  jpm test -v --binary /Applications/FirefoxNightly.app
   exit
 fi
 
-cfx test -v
+jpm test -v
