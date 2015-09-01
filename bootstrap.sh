@@ -17,6 +17,7 @@ fi
 cd sdk
 git fetch origin
 git checkout firefox40
+rm -rf app-extension bin examples python-lib test
 if [ ! -d "packages" ]; then
   mkdir packages
 fi
