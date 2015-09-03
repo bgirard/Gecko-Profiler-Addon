@@ -38,10 +38,7 @@ self.port.on("importFromAddonProgress", function(e) {
 });
 
 self.port.on("importFromAddonFinish", function(val) {
-  if (window.unsafeWindow && unsafeWindow.loadProfile)
-    unsafeWindow.importFromAddonFinish(val);
-  else
-    document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
+  document.defaultView.postMessage(JSON.stringify({task: "importFromAddonFinish", rawProfile: val}), "*");
 });
 
 self.port.on("importFromAddonStart", function (val) {
