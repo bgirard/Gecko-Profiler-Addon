@@ -200,12 +200,18 @@ function sps_stop_profiler() {
 document.getElementById("btnStartProfiler").onclick = sps_start_profiler;
 document.getElementById("btnStopProfiler").onclick = sps_stop_profiler;
 
+function remove_all_children(node) {
+  while (node.hasChildNodes()) {
+    node.removeChild(node.lastChild);
+  }
+}
+
 var onShow = {
   "TcpConnect": function() {
-    document.getElementById("tcpStatus").innerHTML = "";
+    remove_all_children(document.getElementById("tcpStatus"));
   },
   "AdbConnect": function () {
-    document.getElementById("adbStatus").innerHTML = "";
+    remove_all_children(document.getElementById("adbStatus"));
   }
 }
 
