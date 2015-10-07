@@ -26,6 +26,12 @@ self.port.on("change_status", function(val) {
     select_tab(tabLastSelected.id);
 });
 
+function remove_all_children(node) {
+  while (node.hasChildNodes()) {
+    node.removeChild(node.lastChild);
+  }
+}
+
 function select_tab(tabId) {
   if (tabLastSelected) {
     tabLastSelected.classList.remove("selected");
@@ -35,7 +41,7 @@ function select_tab(tabId) {
   tabLastSelected = tab;
 
   var mainAreaDiv = document.getElementById("mainarea");
-  mainAreaDiv.innerHTML = "";
+  remove_all_children(mainAreaDiv);
   if (tabId === "tabSimple") {
     selectTabSimple(mainAreaDiv);
   } else if (tabId === "tabAdvanced") {
