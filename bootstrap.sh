@@ -10,13 +10,16 @@ hash jpm 2> /dev/null || {
   exit -1
 }
 
+npm install -g jpm
+
 cd src
 if [ ! -d "sdk" ]; then
   git clone https://github.com/mozilla/addon-sdk sdk
 fi
 cd sdk
 git fetch origin
-git checkout firefox40
+git pull
+git checkout master
 rm -rf app-extension bin examples python-lib test
 if [ ! -d "packages" ]; then
   mkdir packages
