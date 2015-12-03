@@ -49,7 +49,8 @@ const DEFAULT_SYMBOLICATION_URL = "http://symbolapi.mozilla.org/gecko-profiler/"
 //var DEFAULT_UI_URL = "http://ehsan.github.com/cleopatra/";
 var OLD_UI_URL = "http://varium.fantasytalesonline.com/cleopatra/";
 var OLD_UI_URL2 = "file:///Users/bgirard/ben/sps/cleopatra/index.html";
-var DEFAULT_UI_URL = "http://people.mozilla.com/~bgirard/cleopatra/";
+var UI_ON_PEOPLE_URL = "http://people.mozilla.com/~bgirard/cleopatra/";
+var DEFAULT_UI_URL = "https://cleopatra.io/";
 //var DEFAULT_UI_URL = "file:///home/v/work/cleopatra/index.html";
 //var DEFAULT_UI_URL = "file:///home/vladimir/proj/profiler/cleopatra/index.html";
 //var DEFAULT_UI_URL = "file:///Users/bgirard/ben/sps/cleopatra/index.html";
@@ -1405,7 +1406,12 @@ function bugzilla_file_bug_with_profile(url) {
 */
 
 function get_ui_url() {
-    return prefs.get_pref_string("profiler.", "url", DEFAULT_UI_URL);
+    var url = prefs.get_pref_string("profiler.", "url", DEFAULT_UI_URL);
+    if (url == UI_ON_PEOPLE_URL) {
+      // Prefer cleopatra.io
+      url = DEFAULT_UI_URL;
+    }
+    return url;
 }
 
 function open_settings() {
