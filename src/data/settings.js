@@ -208,6 +208,7 @@ function selectTabSimple(mainAreaDiv) {
   var feature_stackwalking = addFeatureDiv(mainAreaDiv, "Stackwalk", "stackwalk", "");
   var feature_jank = addFeatureDiv(mainAreaDiv, "Jank", "jank", "");
   var feature_mainthreadio = addFeatureDiv(mainAreaDiv, "Main Thread I/O", "mainthreadio", "");
+  var feature_tasktracer = addFeatureDiv(mainAreaDiv, "Task Tracer", "tasktracer", "");
 }
 function selectTabAdvanced(mainAreaDiv) {
   var featuresDiv = document.createElement("div");

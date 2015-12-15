@@ -164,6 +164,15 @@ self.port.on("change_status", function(val) {
       }
     }
 
+    var chkTaskTracer = document.getElementById("chkTaskTracer");
+    if (chkTaskTracer) {
+      chkTaskTracer.disabled = !has_feature("tasktracer") || val.isActive;
+      chkTaskTracer.checked = val.isActive ? has_feature_active("tasktracer") : get_feature_pref("tasktracer");
+      chkTaskTracer.onclick = function() {
+        self.port.emit("set_feature", {feature: "tasktracer", value: chkTaskTracer.checked});
+      }
+    }
+
     var chkJava = document.getElementById("chkJava");
     if (chkJava) {
       chkJava.disabled = !has_feature("java") || val.isActive;
