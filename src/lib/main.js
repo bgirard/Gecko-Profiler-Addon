@@ -717,6 +717,8 @@ function sps_startup(force, manifest) {
     var want_feature_displaylistdump = prefs.get_pref_bool("profiler.", "displaylistdump", false);
     var want_feature_adb = prefs.get_pref_bool("profiler.", "adb", false);
     var want_feature_mainthreadio = prefs.get_pref_bool("profiler.", "mainthreadio", false);
+    var want_feature_tasktracer = prefs.get_pref_bool("profiler.", "tasktracer", false);
+
     threadFilter = prefs.get_pref_string('profiler.', 'threadfilter', 'GeckoMain,Compositor');
 
     if (manifest.defaultTestSettings) {
@@ -732,6 +734,7 @@ function sps_startup(force, manifest) {
       want_feature_displaylistdump = false;
       want_feature_adb = true;
       want_feature_mainthreadio = false;
+      want_feature_tasktracer = false;
       threadFilter = '';
     }
 
@@ -750,6 +753,7 @@ function sps_startup(force, manifest) {
     want_feature_displaylistdump = manifest.displaylistdump || want_feature_displaylistdump;
     want_feature_adb = manifest.adb || want_feature_adb;
     want_feature_mainthreadio = manifest.mainthreadio || want_feature_mainthreadio;
+    want_feature_tasktracer = manifest.tasktracer || want_feature_tasktracer;
     threadFilter = manifest.threadFilter || threadFilter;
 
     // Make sure we have enough entries to get results back
@@ -803,6 +807,10 @@ function sps_startup(force, manifest) {
     if (has_feature("mainthreadio") && want_feature_mainthreadio) {
         selectedFeatures.push("mainthreadio");
     }
+    if (has_feature("tasktracer") && want_feature_tasktracer) {
+        selectedFeatures.push("tasktracer");
+    }
+
     savedProfileLastStop = null; 
     DEBUGLOG("Start profiling with options:");
     DEBUGLOG(selectedFeatures);
