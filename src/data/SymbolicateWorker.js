@@ -227,6 +227,12 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
                 }
               }
             }
+            for (markerId in profile.threads[i].markers) {
+              var marker = profile.threads[i].markers[markerId];
+              if (marker.time) {
+                marker.time += deltaTime;
+              }
+            }
           }
           if (subProfile.libs) {
             if (typeof subProfile.libs == "string") {
