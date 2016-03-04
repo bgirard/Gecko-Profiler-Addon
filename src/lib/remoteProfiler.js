@@ -97,7 +97,7 @@ RemoteProfiler.prototype = {
   },
   registerEventNotifications: function profiler_registerEventNotifications(events, observer) {
     this._client.request({ to: this._profilerActor, type: "registerEventNotifications", events: events }, function(aResponse) {
-      for (let event of aResponse.registered) {
+      for (let event of aResponse.events) {
         if (event in this._eventObservers) {
           if (this._eventObservers[event].indexOf(observer) != -1)
             continue;

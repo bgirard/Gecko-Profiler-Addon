@@ -2183,6 +2183,7 @@ let FirefoxAppWrapper = {
                     panel.port.emit("show_adb_status",
                         "Set devtools.debugger.remote-enabled pref and " +
                         "manually accept incoming connection. " +
+                        "Also enable 'Remote debugging via USB' from the fennec options menu. " +
                         "To avoid conflict, only one running app can have this pref set.");
                     self.initProfiler(remoteProfilerFile.RemoteProfiler, options, function() {
                         panel.port.emit("show_panel", "Controls");
