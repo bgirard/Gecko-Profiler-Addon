@@ -282,13 +282,15 @@ function findSymbolsToResolveJSON(reporter, profile, sharedLibraries) {
         }
     }
 
-    for (var i = 0; i < profile.tasktracer.data.length; i++) {
-	var tasklog = profile.tasktracer.data[i];
-	if (tasklog.substring(0, 2) == "4 ") {
-	    tasklog = tasklog.split(" ");
-	    var addr = "0x" + tasklog[2];
-	    addresses[addr] = null;
-	}
+    if ("tasktracer" in profile) {
+        for (var i = 0; i < profile.tasktracer.data.length; i++) {
+            var tasklog = profile.tasktracer.data[i];
+            if (tasklog.substring(0, 2) == "4 ") {
+                tasklog = tasklog.split(" ");
+                var addr = "0x" + tasklog[2];
+                addresses[addr] = null;
+            }
+        }
     }
 
     reporter.finish();
