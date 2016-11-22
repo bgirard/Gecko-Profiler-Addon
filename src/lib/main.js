@@ -845,10 +845,10 @@ function store_profile_list(listName, hash, duration) {
   query = query + "&hash=" + queryEscape(hash);
   query = query + "&username=" + queryEscape(prefs.get_pref_string("profiler.", "username", "Anonymous"));
   var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
-  for each (var prop in [ "userAgent", "appName", "appVersion",
-               "vendor", "vendorSub",
-               "product", "productSub",
-               "platform", "oscpu", "language", "misc" ]) {
+  for (var prop of [ "userAgent", "appName", "appVersion",
+          "vendor", "vendorSub",
+          "product", "productSub",
+          "platform", "oscpu", "language", "misc" ]) {
     query = query + "&" + prop + "=" + queryEscape(hh[prop]);
   };
   var storeRequest = Request({
@@ -1396,10 +1396,10 @@ function bugzilla_file_bug_with_profile(url) {
                 };
                 
                 var hh = Cc["@mozilla.org/network/protocol;1?name=http"].getService(Ci.nsIHttpProtocolHandler);
-                for each (var prop in [ "userAgent", "appName", "appVersion",
-                             "vendor", "vendorSub",
-                             "product", "productSub",
-                             "platform", "oscpu", "language", "misc" ]) {
+                for (var prop of [ "userAgent", "appName", "appVersion",
+                        "vendor", "vendorSub",
+                        "product", "productSub",
+                        "platform", "oscpu", "language", "misc" ]) {
                     info[prop] = hh[prop];
                 };
                 var data = {
@@ -1547,7 +1547,7 @@ let ThunderbirdAppWrapper = {
 
     let toRemove = ['_dumpButton', '_toggle'];
 
-    for each (let [, aNodeKey] in Iterator(toRemove)) {
+    for (let [, aNodeKey] of Iterator(toRemove)) {
       let node = this[aNodeKey];
       if (node.parentNode)
         node.parentNode.removeChild(node);
