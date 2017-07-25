@@ -1,24 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-  <Description about="urn:mozilla:extension:jid0-edalmuivkozlouyij0lpdx548bc@jetpack">
-    <em:updates>
-      <Seq>
-        <li>
-          <Description>
-            <em:version>1.16.25</em:version>
-            <em:targetApplication>
-              <Description>
-                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-                <em:multiprocessCompatible>true</em:multiprocessCompatible>
-                <em:minVersion>26.0</em:minVersion>
-                <em:maxVersion>43.0</em:maxVersion>
-                <em:updateLink>https://github.com/bgirard/Gecko-Profiler-Addon/raw/master/geckoprofiler-signed.xpi</em:updateLink>
-              </Description>
-            </em:targetApplication>
-          </Description>
-        </li>
-      </Seq>
-    </em:updates>
-  </Description>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+    <Description about="urn:mozilla:extension:jid0-edalmuivkozlouyij0lpdx548bc@jetpack">
+        <em:updates>
+            <Seq>
+                <li>
+                    <Description>
+                          <em:version>2.1.0</em:version>
+
+                          <em:targetApplication>
+                            <Description>
+                              <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                              <em:minVersion>38.0a1</em:minVersion>
+                              <em:maxVersion>54.*</em:maxVersion>
+                              <em:updateLink>https://raw.githubusercontent.com/devtools-html/Gecko-Profiler-Addon/master/gecko_profiler_legacy.xpi</em:updateLink>
+                            </Description>
+                          </em:targetApplication>
+                    </Description>
+                </li>
+                <li>
+                    <Description>
+                          <em:version>2.2.0</em:version>
+
+                          <em:targetApplication>
+                            <Description>
+                              <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                              <em:minVersion>55.0a1</em:minVersion>
+                              <em:maxVersion>*</em:maxVersion>
+                              <em:updateLink>https://raw.githubusercontent.com/devtools-html/Gecko-Profiler-Addon/master/gecko_profiler_transition.xpi</em:updateLink>
+                            </Description>
+                          </em:targetApplication>
+                    </Description>
+                </li>
+            </Seq>
+        </em:updates>
+    </Description>
 </RDF>
